@@ -379,731 +379,47 @@ func (authRequest *GProtoAuthRequest) Decode(version uint16, buf []byte) error {
 ////////////////////////////////////
 // message AuthResponse {
 //     required uint8 code = 1;
-//     required SelfUser user = 2;
-//     repeated Friend friends = 3;
-//	   repeated GroupInfo groups = 4;
-//     repeated Blacklist blacklists = 5;
+//     required string account = 2;
 // }
 
 type GProtoAuthResponse struct {
 	Code    uint8
 	Account string
-	//User       *GProtoSelfUser
-	//Friends    []*GProtoFriend
-	//Groups     []*GProtoGroupInfo
-	//Blacklists []*GProtoBlacklist
 }
 
 ////////////////////////////////////
 
 func (authResponse *GProtoAuthResponse) Encode(version uint16) ([]byte, error) {
 	if version == 1 {
-		// New Buffer
 		buffer := NewEmptyGBuffer()
-
-		/////////////
-		// Encode  //
-		/////////////
 		var err error
-
-		// GProtoAuthResponse.Code
 		if err = buffer.WriteUInt8(authResponse.Code); err != nil {
 			return nil, err
 		}
-
-		// GProtoAuthResponse.User
 		if err = buffer.WriteString(authResponse.Account); err != nil {
 			return nil, err
 		}
-
-		// GProtoAuthResponse.Friends [array]
-		//if err = buffer.WriteArray(1, authResponse.Friends); err != nil {
-		//	return nil, err
-		//}
-		//
-		//// GProtoAuthResponse.Groups [array]
-		//if err = buffer.WriteArray(1, authResponse.Groups); err != nil {
-		//	return nil, err
-		//}
-		//
-		//// GProtoAuthResponse.Blacklists [array]
-		//if err = buffer.WriteArray(1, authResponse.Blacklists); err != nil {
-		//	return nil, err
-		//}
-
 		return buffer.Bytes(), nil
 	}
-
 	return nil, InvalidVersionError
 }
 
 func (authResponse *GProtoAuthResponse) Decode(version uint16, buf []byte) error {
 	// 合法性判断
-	if len(buf) < 8 {
+	if len(buf) < 2 {
 		return InvalidDecodeBufferError
 	}
-
 	if version == 1 {
-		// New Buffer
 		buffer := NewGBuffer(buf)
-
-		/////////////
-		// Decode  //
-		/////////////
 		var err error
-
-		// GProtoAuthResponse.Code
 		if err = buffer.ReadUInt8(&authResponse.Code); err != nil {
 			return err
 		}
-
-		// GProtoAuthResponse.User
 		if authResponse.Account, err = buffer.ReadString(); err != nil {
 			return err
 		}
-
-		// GProtoAuthResponse.Friends [array]
-		//var friendsNum uint16
-		//if err = buffer.ReadUInt16(&friendsNum); err != nil {
-		//	return err
-		//} else {
-		//	authResponse.Friends = make([]*GProtoFriend, friendsNum, friendsNum)
-		//	for i := 0; i < int(friendsNum); i++ {
-		//		var lenObj uint16
-		//		if err = buffer.ReadUInt16(&lenObj); err != nil {
-		//			return err
-		//		} else {
-		//			if bufObj, err := buffer.ReadRawBytes(lenObj); err != nil {
-		//				return err
-		//			} else {
-		//				authResponse.Friends[i] = &GProtoFriend{}
-		//				if err = authResponse.Friends[i].Decode(1, bufObj); err != nil {
-		//					return err
-		//				}
-		//			}
-		//		}
-		//	}
-		//}
-		//
-		//// GProtoAuthResponse.Groups [array]
-		//var groupsNum uint16
-		//if err = buffer.ReadUInt16(&groupsNum); err != nil {
-		//	return err
-		//} else {
-		//	authResponse.Groups = make([]*GProtoGroupInfo, groupsNum, groupsNum)
-		//	for i := 0; i < int(groupsNum); i++ {
-		//		var lenObj uint16
-		//		if err = buffer.ReadUInt16(&lenObj); err != nil {
-		//			return err
-		//		} else {
-		//			if bufObj, err := buffer.ReadRawBytes(lenObj); err != nil {
-		//				return err
-		//			} else {
-		//				authResponse.Groups[i] = &GProtoGroupInfo{}
-		//				if err = authResponse.Groups[i].Decode(1, bufObj); err != nil {
-		//					return err
-		//				}
-		//			}
-		//		}
-		//	}
-		//}
-		//
-		//// GProtoAuthResponse.Blacklists [array]
-		//var blacklistsNum uint16
-		//if err = buffer.ReadUInt16(&blacklistsNum); err != nil {
-		//	return err
-		//} else {
-		//	authResponse.Blacklists = make([]*GProtoBlacklist, blacklistsNum, blacklistsNum)
-		//	for i := 0; i < int(blacklistsNum); i++ {
-		//		var lenObj uint16
-		//		if err = buffer.ReadUInt16(&lenObj); err != nil {
-		//			return err
-		//		} else {
-		//			if bufObj, err := buffer.ReadRawBytes(lenObj); err != nil {
-		//				return err
-		//			} else {
-		//				authResponse.Blacklists[i] = &GProtoBlacklist{}
-		//				if err = authResponse.Blacklists[i].Decode(1, bufObj); err != nil {
-		//					return err
-		//				}
-		//			}
-		//		}
-		//	}
-		//}
-
 		return nil
 	}
-
-	return InvalidVersionError
-}
-
-////////////////////////////////////
-// message SetProfileRequest {
-//     optional string nickname = 1;
-//     optional uint8 gender = 2;
-//     optional string avatar = 3;
-//     optional string signature = 4;
-//     optional string extern = 5;
-// }
-
-type GProtoSetProfileRequest struct {
-	Nickname      string // optional
-	NicknameFlag  uint8
-	Gender        uint8 // optional
-	GenderFlag    uint8
-	Avatar        string // optional
-	AvatarFlag    uint8
-	Signature     string // optional
-	SignatureFlag uint8
-	Extern        string // optional
-	ExternFlag    uint8
-}
-
-func (setProfileRequest *GProtoSetProfileRequest) Encode(version uint16) ([]byte, error) {
-	if version == 1 {
-		// New Buffer
-		buffer := NewEmptyGBuffer()
-
-		/////////////
-		// Encode  //
-		/////////////
-		var err error
-
-		// GProtoSetProfileRequest.Nickname [optional]
-		if setProfileRequest.NicknameFlag == OPTIONAL_FALSE {
-			if err = buffer.WriteUInt8(OPTIONAL_FALSE); err != nil {
-				return nil, err
-			}
-		} else {
-			if err = buffer.WriteUInt8(OPTIONAL_TRUE); err != nil {
-				return nil, err
-			}
-			if err = buffer.WriteString(setProfileRequest.Nickname); err != nil {
-				return nil, err
-			}
-		}
-
-		// GProtoSetProfileRequest.Gender [optional]
-		if setProfileRequest.GenderFlag == OPTIONAL_FALSE {
-			if err = buffer.WriteUInt8(OPTIONAL_FALSE); err != nil {
-				return nil, err
-			}
-		} else {
-			if err = buffer.WriteUInt8(OPTIONAL_TRUE); err != nil {
-				return nil, err
-			}
-			if err = buffer.WriteUInt8(setProfileRequest.Gender); err != nil {
-				return nil, err
-			}
-		}
-
-		// GProtoSetProfileRequest.Avatar [optional]
-		if setProfileRequest.AvatarFlag == OPTIONAL_FALSE {
-			if err = buffer.WriteUInt8(OPTIONAL_FALSE); err != nil {
-				return nil, err
-			}
-		} else {
-			if err = buffer.WriteUInt8(OPTIONAL_TRUE); err != nil {
-				return nil, err
-			}
-			if err = buffer.WriteString(setProfileRequest.Avatar); err != nil {
-				return nil, err
-			}
-		}
-
-		// GProtoSetProfileRequest.Signature [optional]
-		if setProfileRequest.SignatureFlag == OPTIONAL_FALSE {
-			if err = buffer.WriteUInt8(OPTIONAL_FALSE); err != nil {
-				return nil, err
-			}
-		} else {
-			if err = buffer.WriteUInt8(OPTIONAL_TRUE); err != nil {
-				return nil, err
-			}
-			if err = buffer.WriteString(setProfileRequest.Signature); err != nil {
-				return nil, err
-			}
-		}
-
-		// GProtoSetProfileRequest.Extern [optional]
-		if setProfileRequest.ExternFlag == OPTIONAL_FALSE {
-			if err = buffer.WriteUInt8(OPTIONAL_FALSE); err != nil {
-				return nil, err
-			}
-		} else {
-			if err = buffer.WriteUInt8(OPTIONAL_TRUE); err != nil {
-				return nil, err
-			}
-			if err = buffer.WriteString(setProfileRequest.Extern); err != nil {
-				return nil, err
-			}
-		}
-
-		return buffer.Bytes(), nil
-	}
-
-	return nil, InvalidVersionError
-}
-
-func (setProfileRequest *GProtoSetProfileRequest) Decode(version uint16, buf []byte) error {
-	// 合法性判断
-	if len(buf) < 1 {
-		return InvalidDecodeBufferError
-	}
-
-	if version == 1 {
-		// New Buffer
-		buffer := NewGBuffer(buf)
-
-		/////////////
-		// Decode  //
-		/////////////
-		var err error
-
-		// GProtoSetProfileRequest.Nickname [optional]
-		if err = buffer.ReadUInt8(&setProfileRequest.NicknameFlag); err != nil {
-			return err
-		}
-		if setProfileRequest.NicknameFlag == OPTIONAL_TRUE {
-			if setProfileRequest.Nickname, err = buffer.ReadString(); err != nil {
-				return err
-			}
-		}
-
-		// GProtoSetProfileRequest.Gender [optional]
-		if err = buffer.ReadUInt8(&setProfileRequest.GenderFlag); err != nil {
-			return err
-		}
-		if setProfileRequest.GenderFlag == OPTIONAL_TRUE {
-			if err = buffer.ReadUInt8(&setProfileRequest.Gender); err != nil {
-				return err
-			}
-		}
-
-		// GProtoSetProfileRequest.Avatar [optional]
-		if err = buffer.ReadUInt8(&setProfileRequest.AvatarFlag); err != nil {
-			return err
-		}
-		if setProfileRequest.AvatarFlag == OPTIONAL_TRUE {
-			if setProfileRequest.Avatar, err = buffer.ReadString(); err != nil {
-				return err
-			}
-		}
-
-		// GProtoSetProfileRequest.Signature [optional]
-		if err = buffer.ReadUInt8(&setProfileRequest.SignatureFlag); err != nil {
-			return err
-		}
-		if setProfileRequest.SignatureFlag == OPTIONAL_TRUE {
-			if setProfileRequest.Signature, err = buffer.ReadString(); err != nil {
-				return err
-			}
-		}
-
-		// GProtoSetProfileRequest.Extern [optional]
-		if err = buffer.ReadUInt8(&setProfileRequest.ExternFlag); err != nil {
-			return err
-		}
-		if setProfileRequest.ExternFlag == OPTIONAL_TRUE {
-			if setProfileRequest.Extern, err = buffer.ReadString(); err != nil {
-				return err
-			}
-		}
-
-		return nil
-	}
-
-	return InvalidVersionError
-}
-
-////////////////////////////////////
-// message SetProfileResponse {
-//     required uint8 code = 1;
-//     optional SelfUser user = 2;
-// }
-
-type GProtoSetProfileResponse struct {
-	Code     uint8
-	User     *GProtoSelfUser // optional
-	UserFlag uint8
-}
-
-func (setProfileResponse *GProtoSetProfileResponse) Encode(version uint16) ([]byte, error) {
-	if version == 1 {
-		// New Buffer
-		buffer := NewEmptyGBuffer()
-
-		/////////////
-		// Encode  //
-		/////////////
-		var err error
-
-		// GProtoSetProfileResponse.Code
-		if err = buffer.WriteUInt8(setProfileResponse.Code); err != nil {
-			return nil, err
-		}
-
-		// GProtoSetProfileResponse.User [optional]
-		if setProfileResponse.UserFlag == OPTIONAL_FALSE {
-			if err = buffer.WriteUInt8(OPTIONAL_FALSE); err != nil {
-				return nil, err
-			}
-		} else {
-			if err = buffer.WriteUInt8(OPTIONAL_TRUE); err != nil {
-				return nil, err
-			}
-			if err = buffer.WriteStruct(1, setProfileResponse.User); err != nil {
-				return nil, err
-			}
-		}
-
-		return buffer.Bytes(), nil
-	}
-
-	return nil, InvalidVersionError
-}
-
-func (setProfileResponse *GProtoSetProfileResponse) Decode(version uint16, buf []byte) error {
-	// 合法性判断
-	if len(buf) < 1 {
-		return InvalidDecodeBufferError
-	}
-
-	if version == 1 {
-		// New Buffer
-		buffer := NewGBuffer(buf)
-
-		/////////////
-		// Decode  //
-		/////////////
-		var err error
-
-		// GProtoSetProfileResponse.Code
-		if err = buffer.ReadUInt8(&setProfileResponse.Code); err != nil {
-			return err
-		}
-
-		// GProtoSetProfileResponse.User [optional]
-		if err = buffer.ReadUInt8(&setProfileResponse.UserFlag); err != nil {
-			return err
-		}
-		if setProfileResponse.UserFlag == OPTIONAL_TRUE {
-			setProfileResponse.User = &GProtoSelfUser{}
-			if err = buffer.ReadStruct(1, setProfileResponse.User); err != nil {
-				return err
-			}
-		}
-
-		return nil
-	}
-
-	return InvalidVersionError
-}
-
-////////////////////////////////////
-// message SetFriendMarknameRequest {
-//     required string account = 1;
-//     required string markname = 2;
-// }
-
-type GProtoSetFriendMarknameRequest struct {
-	Account  string
-	Markname string
-}
-
-func (setFriendMarknameRequest *GProtoSetFriendMarknameRequest) Encode(version uint16) ([]byte, error) {
-	if version == 1 {
-		// New Buffer
-		buffer := NewEmptyGBuffer()
-
-		/////////////
-		// Encode  //
-		/////////////
-		var err error
-
-		// GProtoSetFriendMarknameRequest.Account
-		if err = buffer.WriteString(setFriendMarknameRequest.Account); err != nil {
-			return nil, err
-		}
-
-		// GProtoSetFriendMarknameRequest.Markname
-		if err = buffer.WriteString(setFriendMarknameRequest.Markname); err != nil {
-			return nil, err
-		}
-
-		return buffer.Bytes(), nil
-	}
-
-	return nil, InvalidVersionError
-}
-
-func (setFriendMarknameRequest *GProtoSetFriendMarknameRequest) Decode(version uint16, buf []byte) error {
-	// 合法性判断
-	if len(buf) < 1 {
-		return InvalidDecodeBufferError
-	}
-
-	if version == 1 {
-		// New Buffer
-		buffer := NewGBuffer(buf)
-
-		/////////////
-		// Decode  //
-		/////////////
-		var err error
-
-		// GProtoSetFriendMarknameRequest.Account
-		if setFriendMarknameRequest.Account, err = buffer.ReadString(); err != nil {
-			return err
-		}
-
-		// GProtoSetFriendMarknameRequest.Markname
-		if setFriendMarknameRequest.Markname, err = buffer.ReadString(); err != nil {
-			return err
-		}
-
-		return nil
-	}
-
-	return InvalidVersionError
-}
-
-///////////////////////////////////////
-// message SetFriendMarknameResponse {
-//     required uint8 code = 1;
-//     optional OtherUser user = 2;
-// }
-type GProtoSetFriendMarknameResponse struct {
-	Code     uint8
-	User     *GProtoOtherUser // optional
-	UserFlag uint8
-}
-
-func (setFriendMarknameResponse *GProtoSetFriendMarknameResponse) Encode(version uint16) ([]byte, error) {
-	if version == 1 {
-		// New Buffer
-		buffer := NewEmptyGBuffer()
-
-		/////////////
-		// Encode  //
-		/////////////
-		var err error
-
-		// GProtoSetFriendMarknameResponse.Code
-		if err = buffer.WriteUInt8(setFriendMarknameResponse.Code); err != nil {
-			return nil, err
-		}
-
-		// GProtoSetFriendMarknameResponse.User [optional]
-		if setFriendMarknameResponse.UserFlag == OPTIONAL_FALSE {
-			if err = buffer.WriteUInt8(OPTIONAL_FALSE); err != nil {
-				return nil, err
-			}
-		} else {
-			if err = buffer.WriteUInt8(OPTIONAL_TRUE); err != nil {
-				return nil, err
-			}
-			if err = buffer.WriteStruct(1, setFriendMarknameResponse.User); err != nil {
-				return nil, err
-			}
-		}
-
-		return buffer.Bytes(), nil
-	}
-
-	return nil, InvalidVersionError
-}
-
-func (setFriendMarknameResponse *GProtoSetFriendMarknameResponse) Decode(version uint16, buf []byte) error {
-	// 合法性判断
-	if len(buf) < 1 {
-		return InvalidDecodeBufferError
-	}
-
-	if version == 1 {
-		// New Buffer
-		buffer := NewGBuffer(buf)
-
-		/////////////
-		// Decode  //
-		/////////////
-		var err error
-
-		// GProtoSetFriendMarknameResponse.Code
-		if err = buffer.ReadUInt8(&setFriendMarknameResponse.Code); err != nil {
-			return err
-		}
-
-		// GProtoSetFriendMarknameResponse.User [optional]
-		if err = buffer.ReadUInt8(&setFriendMarknameResponse.UserFlag); err != nil {
-			return err
-		}
-		if setFriendMarknameResponse.UserFlag == OPTIONAL_TRUE {
-			setFriendMarknameResponse.User = &GProtoOtherUser{}
-			if err = buffer.ReadStruct(1, setFriendMarknameResponse.User); err != nil {
-				return err
-			}
-		}
-
-		return nil
-	}
-
-	return InvalidVersionError
-}
-
-////////////////////////////////////
-// message GetProfilesRequest {
-//     repeated string accounts = 1;
-// }
-
-type GProtoGetProfilesRequest struct {
-	Accounts []string
-}
-
-func (getProfilesRequest *GProtoGetProfilesRequest) Encode(version uint16) ([]byte, error) {
-	if version == 1 {
-		// New Buffer
-		buffer := NewEmptyGBuffer()
-
-		/////////////
-		// Encode  //
-		/////////////
-		var err error
-
-		// GProtoGetProfilesRequest.Accounts [array]
-		accountNum := len(getProfilesRequest.Accounts)
-		if err := buffer.WriteUInt16(uint16(accountNum)); err != nil {
-			return nil, err
-		}
-		for i := 0; i < accountNum; i++ {
-			if err = buffer.WriteString(getProfilesRequest.Accounts[i]); err != nil {
-				return nil, err
-			}
-		}
-
-		return buffer.Bytes(), nil
-	}
-
-	return nil, InvalidVersionError
-}
-
-func (getProfilesRequest *GProtoGetProfilesRequest) Decode(version uint16, buf []byte) error {
-	// 合法性判断
-	if len(buf) < 1 {
-		return InvalidDecodeBufferError
-	}
-
-	if version == 1 {
-		// New Buffer
-		buffer := NewGBuffer(buf)
-
-		/////////////
-		// Decode  //
-		/////////////
-		var err error
-
-		// GProtoGetProfilesRequest.Accounts [array]
-		var accountsNum uint16
-		if err = buffer.ReadUInt16(&accountsNum); err != nil {
-			return err
-		} else {
-			getProfilesRequest.Accounts = make([]string, accountsNum, accountsNum)
-			for i := 0; i < int(accountsNum); i++ {
-				if getProfilesRequest.Accounts[i], err = buffer.ReadString(); err != nil {
-					return err
-				}
-			}
-		}
-
-		return nil
-	}
-
-	return InvalidVersionError
-}
-
-////////////////////////////////////
-// message GetProfilesResponse {
-//     required uint8 code = 1;
-//     repeated OtherUser users = 2;
-// }
-
-type GProtoGetProfilesResponse struct {
-	Code  uint8
-	Users []*GProtoOtherUser
-}
-
-func (getProfilesResponse *GProtoGetProfilesResponse) Encode(version uint16) ([]byte, error) {
-	if version == 1 {
-		// New Buffer
-		buffer := NewEmptyGBuffer()
-
-		/////////////
-		// Encode  //
-		/////////////
-		var err error
-
-		// GProtoGetProfilesResponse.Code
-		if err = buffer.WriteUInt8(getProfilesResponse.Code); err != nil {
-			return nil, err
-		}
-
-		// GProtoGetProfilesResponse.Users [array]
-		if err = buffer.WriteArray(1, getProfilesResponse.Users); err != nil {
-			return nil, err
-		}
-
-		return buffer.Bytes(), nil
-	}
-
-	return nil, InvalidVersionError
-}
-
-func (getProfilesResponse *GProtoGetProfilesResponse) Decode(version uint16, buf []byte) error {
-	// 合法性判断
-	if len(buf) < 1 {
-		return InvalidDecodeBufferError
-	}
-
-	if version == 1 {
-		// New Buffer
-		buffer := NewGBuffer(buf)
-
-		/////////////
-		// Decode  //
-		/////////////
-		var err error
-
-		// GProtoGetProfilesResponse.Code
-		if err = buffer.ReadUInt8(&getProfilesResponse.Code); err != nil {
-			return err
-		}
-
-		// GProtoGetProfilesResponse.Users [array]
-		var usersNum uint16
-		if err = buffer.ReadUInt16(&usersNum); err != nil {
-			return err
-		} else {
-			getProfilesResponse.Users = make([]*GProtoOtherUser, usersNum, usersNum)
-			for i := 0; i < int(usersNum); i++ {
-				var lenObj uint16
-				if err = buffer.ReadUInt16(&lenObj); err != nil {
-					return err
-				} else {
-					if bufObj, err := buffer.ReadRawBytes(lenObj); err != nil {
-						return err
-					} else {
-						getProfilesResponse.Users[i] = &GProtoOtherUser{}
-						if err = getProfilesResponse.Users[i].Decode(1, bufObj); err != nil {
-							return err
-						}
-					}
-				}
-			}
-		}
-
-		return nil
-	}
-
 	return InvalidVersionError
 }
 
@@ -1111,14 +427,11 @@ func (getProfilesResponse *GProtoGetProfilesResponse) Decode(version uint16, buf
 // message MessageRequest {
 //     required string msgId = 1;
 //     required uint8 msgType = 2;
-
 //     required string content = 3;
 //     required string from = 4;
 //     required string to = 5;
-
-//     optional uint32 file_size = 6;
-//     optional uint32 record_time = 7;
-//     optional string extern = 8;
+//     optional uint32 record_time = 6;
+//     optional string extend = 7;
 // }
 
 const (
@@ -1160,94 +473,37 @@ type GProtoMessageRequest struct {
 	Content                string
 	From                   string
 	To                     string
-	FileSize               uint32 // optional
-	FileSizeOptionalFlag   uint8
-	RecordTime             uint32 // optional
-	RecordTimeOptionalFlag uint8
-	Extern                 string // optional
-	ExternOptionalFlag     uint8
+	RecordTime             uint32
+	Extend                 string
 }
 
 func (messageRequest *GProtoMessageRequest) Encode(version uint16) ([]byte, error) {
 	if version == 1 {
-		// New Buffer
 		buffer := NewEmptyGBuffer()
-
-		/////////////
-		// Encode  //
-		/////////////
 		var err error
-
-		// GProtoMessageRequest.MsgId
 		if err = buffer.WriteString(messageRequest.MsgId); err != nil {
 			return nil, err
 		}
-
-		// GProtoMessageRequest.MsgType
 		if err = buffer.WriteUInt8(messageRequest.MsgType); err != nil {
 			return nil, err
 		}
-
-		// GProtoMessageRequest.Content
 		if err = buffer.WriteString(messageRequest.Content); err != nil {
 			return nil, err
 		}
-
-		// GProtoMessageRequest.From
 		if err = buffer.WriteString(messageRequest.From); err != nil {
 			return nil, err
 		}
-
-		// GProtoMessageRequest.To
 		if err = buffer.WriteString(messageRequest.To); err != nil {
 			return nil, err
 		}
-
-		// GProtoMessageRequest.FileSize [optional]
-		if messageRequest.FileSizeOptionalFlag == OPTIONAL_FALSE {
-			if err = buffer.WriteUInt8(OPTIONAL_FALSE); err != nil {
-				return nil, err
-			}
-		} else {
-			if err = buffer.WriteUInt8(OPTIONAL_TRUE); err != nil {
-				return nil, err
-			}
-			if err = buffer.WriteUInt32(messageRequest.FileSize); err != nil {
-				return nil, err
-			}
+		if err = buffer.WriteUInt32(messageRequest.RecordTime); err != nil {
+			return nil, err
 		}
-
-		// GProtoMessageRequest.RecordTime [optional]
-		if messageRequest.RecordTimeOptionalFlag == OPTIONAL_FALSE {
-			if err = buffer.WriteUInt8(OPTIONAL_FALSE); err != nil {
-				return nil, err
-			}
-		} else {
-			if err = buffer.WriteUInt8(OPTIONAL_TRUE); err != nil {
-				return nil, err
-			}
-			if err = buffer.WriteUInt32(messageRequest.RecordTime); err != nil {
-				return nil, err
-			}
+		if err = buffer.WriteString(messageRequest.Extend); err != nil {
+			return nil, err
 		}
-
-		// GProtoMessageRequest.Extern [optional]
-		if messageRequest.ExternOptionalFlag == OPTIONAL_FALSE {
-			if err = buffer.WriteUInt8(OPTIONAL_FALSE); err != nil {
-				return nil, err
-			}
-		} else {
-			if err = buffer.WriteUInt8(OPTIONAL_TRUE); err != nil {
-				return nil, err
-			}
-			if err = buffer.WriteString(messageRequest.Extern); err != nil {
-				return nil, err
-			}
-		}
-
 		return buffer.Bytes(), nil
 	}
-
 	return nil, InvalidVersionError
 }
 
@@ -1258,72 +514,31 @@ func (messageRequest *GProtoMessageRequest) Decode(version uint16, buf []byte) e
 	}
 
 	if version == 1 {
-		// New Buffer
 		buffer := NewGBuffer(buf)
-
-		/////////////
-		// Decode  //
-		/////////////
 		var err error
-
-		// GProtoMessageRequest.MsgId
 		if messageRequest.MsgId, err = buffer.ReadString(); err != nil {
 			return err
 		}
-
-		// GProtoMessageRequest.MsgType
 		if err = buffer.ReadUInt8(&messageRequest.MsgType); err != nil {
 			return err
 		}
-
-		// GProtoMessageRequest.Content
 		if messageRequest.Content, err = buffer.ReadString(); err != nil {
 			return err
 		}
-
-		// GProtoMessageRequest.From
 		if messageRequest.From, err = buffer.ReadString(); err != nil {
 			return err
 		}
-
-		// GProtoMessageRequest.To
 		if messageRequest.To, err = buffer.ReadString(); err != nil {
 			return err
 		}
-
-		// GProtoMessageRequest.FileSize [optional]
-		if err = buffer.ReadUInt8(&messageRequest.FileSizeOptionalFlag); err != nil {
+		if err = buffer.ReadUInt32(&messageRequest.RecordTime); err != nil {
 			return err
 		}
-		if messageRequest.FileSizeOptionalFlag == OPTIONAL_TRUE {
-			if err = buffer.ReadUInt32(&messageRequest.FileSize); err != nil {
-				return err
-			}
-		}
-
-		// GProtoMessageRequest.RecordTime [optional]
-		if err = buffer.ReadUInt8(&messageRequest.RecordTimeOptionalFlag); err != nil {
+		if messageRequest.Extend, err = buffer.ReadString(); err != nil {
 			return err
 		}
-		if messageRequest.RecordTimeOptionalFlag == OPTIONAL_TRUE {
-			if err = buffer.ReadUInt32(&messageRequest.RecordTime); err != nil {
-				return err
-			}
-		}
-
-		// GProtoMessageRequest.Extern [optional]
-		if err = buffer.ReadUInt8(&messageRequest.ExternOptionalFlag); err != nil {
-			return err
-		}
-		if messageRequest.ExternOptionalFlag == OPTIONAL_TRUE {
-			if messageRequest.Extern, err = buffer.ReadString(); err != nil {
-				return err
-			}
-		}
-
 		return nil
 	}
-
 	return InvalidVersionError
 }
 
