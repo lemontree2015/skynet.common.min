@@ -468,13 +468,12 @@ const (
 )
 
 type GProtoMessageRequest struct {
-	MsgId                  string
-	MsgType                uint8
-	Content                string
-	From                   string
-	To                     string
-	RecordTime             uint32
-	Extend                 string
+	MsgId   string
+	MsgType uint8
+	Content string
+	From    string
+	To      string
+	Extend  string
 }
 
 func (messageRequest *GProtoMessageRequest) Encode(version uint16) ([]byte, error) {
@@ -494,9 +493,6 @@ func (messageRequest *GProtoMessageRequest) Encode(version uint16) ([]byte, erro
 			return nil, err
 		}
 		if err = buffer.WriteString(messageRequest.To); err != nil {
-			return nil, err
-		}
-		if err = buffer.WriteUInt32(messageRequest.RecordTime); err != nil {
 			return nil, err
 		}
 		if err = buffer.WriteString(messageRequest.Extend); err != nil {
@@ -531,9 +527,6 @@ func (messageRequest *GProtoMessageRequest) Decode(version uint16, buf []byte) e
 		if messageRequest.To, err = buffer.ReadString(); err != nil {
 			return err
 		}
-		if err = buffer.ReadUInt32(&messageRequest.RecordTime); err != nil {
-			return err
-		}
 		if messageRequest.Extend, err = buffer.ReadString(); err != nil {
 			return err
 		}
@@ -551,65 +544,30 @@ func (messageRequest *GProtoMessageRequest) Decode(version uint16, buf []byte) e
 // }
 
 type GProtoMessageResponse struct {
-	Code        uint8
-	MsgId       string
-	MsgType     uint8 // optional
-	MsgTypeFlag uint8
-	Content     string // optional
-	ContentFlag uint8
+	Code    uint8
+	MsgId   string
+	MsgType uint8
+	Content string
 }
 
 func (messageResponse *GProtoMessageResponse) Encode(version uint16) ([]byte, error) {
 	if version == 1 {
-		// New Buffer
 		buffer := NewEmptyGBuffer()
-
-		/////////////
-		// Encode  //
-		/////////////
 		var err error
-
-		// GProtoMessageResponse.Code
 		if err = buffer.WriteUInt8(messageResponse.Code); err != nil {
 			return nil, err
 		}
-
-		// GProtoMessageResponse.MsgId
 		if err = buffer.WriteString(messageResponse.MsgId); err != nil {
 			return nil, err
 		}
-
-		// GProtoMessageResponse.MsgType [optional]
-		if messageResponse.MsgTypeFlag == OPTIONAL_FALSE {
-			if err = buffer.WriteUInt8(OPTIONAL_FALSE); err != nil {
-				return nil, err
-			}
-		} else {
-			if err = buffer.WriteUInt8(OPTIONAL_TRUE); err != nil {
-				return nil, err
-			}
-			if err = buffer.WriteUInt8(messageResponse.MsgType); err != nil {
-				return nil, err
-			}
+		if err = buffer.WriteUInt8(messageResponse.MsgType); err != nil {
+			return nil, err
 		}
-
-		// GProtoMessageResponse.ContentFlag [optional]
-		if messageResponse.ContentFlag == OPTIONAL_FALSE {
-			if err = buffer.WriteUInt8(OPTIONAL_FALSE); err != nil {
-				return nil, err
-			}
-		} else {
-			if err = buffer.WriteUInt8(OPTIONAL_TRUE); err != nil {
-				return nil, err
-			}
-			if err = buffer.WriteString(messageResponse.Content); err != nil {
-				return nil, err
-			}
+		if err = buffer.WriteString(messageResponse.Content); err != nil {
+			return nil, err
 		}
-
 		return buffer.Bytes(), nil
 	}
-
 	return nil, InvalidVersionError
 }
 
@@ -618,49 +576,23 @@ func (messageResponse *GProtoMessageResponse) Decode(version uint16, buf []byte)
 	if len(buf) < 3 {
 		return InvalidDecodeBufferError
 	}
-
 	if version == 1 {
-		// New Buffer
 		buffer := NewGBuffer(buf)
-
-		/////////////
-		// Decode  //
-		/////////////
 		var err error
-
-		// GProtoMessageResponse.Code
 		if err = buffer.ReadUInt8(&messageResponse.Code); err != nil {
 			return err
 		}
-
-		// GProtoMessageResponse.MsgId
 		if messageResponse.MsgId, err = buffer.ReadString(); err != nil {
 			return err
 		}
-
-		// GProtoMessageResponse.MsgType [optional]
-		if err = buffer.ReadUInt8(&messageResponse.MsgTypeFlag); err != nil {
+		if err = buffer.ReadUInt8(&messageResponse.MsgType); err != nil {
 			return err
 		}
-		if messageResponse.MsgTypeFlag == OPTIONAL_TRUE {
-			if err = buffer.ReadUInt8(&messageResponse.MsgType); err != nil {
-				return err
-			}
-		}
-
-		// GProtoMessageResponse.ContentFlag [optional]
-		if err = buffer.ReadUInt8(&messageResponse.ContentFlag); err != nil {
+		if messageResponse.Content, err = buffer.ReadString(); err != nil {
 			return err
 		}
-		if messageResponse.ContentFlag == OPTIONAL_TRUE {
-			if messageResponse.Content, err = buffer.ReadString(); err != nil {
-				return err
-			}
-		}
-
 		return nil
 	}
-
 	return InvalidVersionError
 }
 
@@ -668,127 +600,55 @@ func (messageResponse *GProtoMessageResponse) Decode(version uint16, buf []byte)
 // message MessageNotify {
 //     required string msgId = 1;
 //     required uint8 msgType = 2;
-
 //     required string content = 3;
 //     required string from = 4;
 //     required string to = 5;
-
 //     required uint64 send_time = 6;
 //	   required uint64 send_time_ack = 7;
-
-//     optional uint32 file_size = 8;
-//     optional uint32 record_time = 9;
-//     optional string extern = 10;
+//     optional string extend = 8;
 // }
 
 type GProtoMessageNotify struct {
-	MsgId                  string
-	MsgType                uint8
-	Content                string
-	From                   string
-	To                     string
-	SendTime               uint64
-	SendTimeAck            uint64
-	FileSize               uint32 // optional
-	FileSizeOptionalFlag   uint8
-	RecordTime             uint32 // optional
-	RecordTimeOptionalFlag uint8
-	Extern                 string // optional
-	ExternOptionalFlag     uint8
-
-	FixTo string // 这个字段不发送, 只是内部使用(群组的时候To逻辑需要做修改)
+	MsgId       string
+	MsgType     uint8
+	Content     string
+	From        string
+	To          string
+	SendTime    uint64
+	SendTimeAck uint64
+	Extend      string
 }
 
 func (messageNotify *GProtoMessageNotify) Encode(version uint16) ([]byte, error) {
 	if version == 1 {
-		// New Buffer
 		buffer := NewEmptyGBuffer()
-
-		/////////////
-		// Encode  //
-		/////////////
 		var err error
-
-		// GProtoMessageNotify.MsgId
 		if err = buffer.WriteString(messageNotify.MsgId); err != nil {
 			return nil, err
 		}
-
-		// GProtoMessageNotify.MsgType
 		if err = buffer.WriteUInt8(messageNotify.MsgType); err != nil {
 			return nil, err
 		}
-
-		// GProtoMessageNotify.Content
 		if err = buffer.WriteString(messageNotify.Content); err != nil {
 			return nil, err
 		}
-
-		// GProtoMessageNotify.From
 		if err = buffer.WriteString(messageNotify.From); err != nil {
 			return nil, err
 		}
-
-		// GProtoMessageNotify.To
 		if err = buffer.WriteString(messageNotify.To); err != nil {
 			return nil, err
 		}
-
-		// GProtoMessageNotify.SendTime
 		if err = buffer.WriteUInt64(messageNotify.SendTime); err != nil {
 			return nil, err
 		}
-
-		// GProtoMessageNotify.SendTimeAck
 		if err = buffer.WriteUInt64(messageNotify.SendTimeAck); err != nil {
 			return nil, err
 		}
-
-		// GProtoMessageNotify.FileSize [optional]
-		if messageNotify.FileSizeOptionalFlag == OPTIONAL_FALSE {
-			if err = buffer.WriteUInt8(OPTIONAL_FALSE); err != nil {
-				return nil, err
-			}
-		} else {
-			if err = buffer.WriteUInt8(OPTIONAL_TRUE); err != nil {
-				return nil, err
-			}
-			if err = buffer.WriteUInt32(messageNotify.FileSize); err != nil {
-				return nil, err
-			}
+		if err = buffer.WriteString(messageNotify.Extend); err != nil {
+			return nil, err
 		}
-
-		// GProtoMessageNotify.RecordTime [optional]
-		if messageNotify.RecordTimeOptionalFlag == OPTIONAL_FALSE {
-			if err = buffer.WriteUInt8(OPTIONAL_FALSE); err != nil {
-				return nil, err
-			}
-		} else {
-			if err = buffer.WriteUInt8(OPTIONAL_TRUE); err != nil {
-				return nil, err
-			}
-			if err = buffer.WriteUInt32(messageNotify.RecordTime); err != nil {
-				return nil, err
-			}
-		}
-
-		// GProtoMessageNotify.Extern [optional]
-		if messageNotify.ExternOptionalFlag == OPTIONAL_FALSE {
-			if err = buffer.WriteUInt8(OPTIONAL_FALSE); err != nil {
-				return nil, err
-			}
-		} else {
-			if err = buffer.WriteUInt8(OPTIONAL_TRUE); err != nil {
-				return nil, err
-			}
-			if err = buffer.WriteString(messageNotify.Extern); err != nil {
-				return nil, err
-			}
-		}
-
 		return buffer.Bytes(), nil
 	}
-
 	return nil, InvalidVersionError
 }
 
@@ -799,82 +659,34 @@ func (messageNotify *GProtoMessageNotify) Decode(version uint16, buf []byte) err
 	}
 
 	if version == 1 {
-		// New Buffer
 		buffer := NewGBuffer(buf)
-
-		/////////////
-		// Decode  //
-		/////////////
 		var err error
-
-		// GProtoMessageNotify.MsgId
 		if messageNotify.MsgId, err = buffer.ReadString(); err != nil {
 			return err
 		}
-
-		// GProtoMessageNotify.MsgType
 		if err = buffer.ReadUInt8(&messageNotify.MsgType); err != nil {
 			return err
 		}
-
-		// GProtoMessageNotify.Content
 		if messageNotify.Content, err = buffer.ReadString(); err != nil {
 			return err
 		}
-
-		// GProtoMessageNotify.From
 		if messageNotify.From, err = buffer.ReadString(); err != nil {
 			return err
 		}
-
-		// GProtoMessageNotify.To
 		if messageNotify.To, err = buffer.ReadString(); err != nil {
 			return err
 		}
-
-		// GProtoMessageNotify.SendTime
 		if err = buffer.ReadUInt64(&messageNotify.SendTime); err != nil {
 			return err
 		}
-
-		// GProtoMessageNotify.SendTimeAck
 		if err = buffer.ReadUInt64(&messageNotify.SendTimeAck); err != nil {
 			return err
 		}
-
-		// GProtoMessageNotify.FileSize [optional]
-		if err = buffer.ReadUInt8(&messageNotify.FileSizeOptionalFlag); err != nil {
+		if messageNotify.Extend, err = buffer.ReadString(); err != nil {
 			return err
 		}
-		if messageNotify.FileSizeOptionalFlag == OPTIONAL_TRUE {
-			if err = buffer.ReadUInt32(&messageNotify.FileSize); err != nil {
-				return err
-			}
-		}
-
-		// GProtoMessageNotify.RecordTime [optional]
-		if err = buffer.ReadUInt8(&messageNotify.RecordTimeOptionalFlag); err != nil {
-			return err
-		}
-		if messageNotify.RecordTimeOptionalFlag == OPTIONAL_TRUE {
-			if err = buffer.ReadUInt32(&messageNotify.RecordTime); err != nil {
-				return err
-			}
-		}
-
-		// GProtoMessageNotify.Extern [optional]
-		if err = buffer.ReadUInt8(&messageNotify.ExternOptionalFlag); err != nil {
-			return err
-		}
-		if messageNotify.ExternOptionalFlag == OPTIONAL_TRUE {
-			if messageNotify.Extern, err = buffer.ReadString(); err != nil {
-				return err
-			}
-		}
-
 		return nil
 	}
-
 	return InvalidVersionError
 }
 
@@ -889,22 +701,13 @@ type GProtoMessageAck struct {
 
 func (messageAck *GProtoMessageAck) Encode(version uint16) ([]byte, error) {
 	if version == 1 {
-		// New Buffer
 		buffer := NewEmptyGBuffer()
-
-		/////////////
-		// Encode  //
-		/////////////
 		var err error
-
-		// GProtoMessageAck.MsgId
 		if err = buffer.WriteString(messageAck.MsgId); err != nil {
 			return nil, err
 		}
-
 		return buffer.Bytes(), nil
 	}
-
 	return nil, InvalidVersionError
 }
 
@@ -913,992 +716,14 @@ func (messageAck *GProtoMessageAck) Decode(version uint16, buf []byte) error {
 	if len(buf) < 1 {
 		return InvalidDecodeBufferError
 	}
-
 	if version == 1 {
-		// New Buffer
 		buffer := NewGBuffer(buf)
-
-		/////////////
-		// Decode  //
-		/////////////
 		var err error
-
-		// GProtoMessageAck.MsgId
 		if messageAck.MsgId, err = buffer.ReadString(); err != nil {
 			return err
 		}
-
 		return nil
 	}
-
-	return InvalidVersionError
-}
-
-////////////////////////////////////
-// message AddFriendRequest {
-//     required string account = 1;
-//     required string desc = 2;
-// }
-
-type GProtoAddFriendRequest struct {
-	Account string
-	Desc    string
-}
-
-func (addFriendRequest *GProtoAddFriendRequest) Encode(version uint16) ([]byte, error) {
-	if version == 1 {
-		// New Buffer
-		buffer := NewEmptyGBuffer()
-
-		/////////////
-		// Encode  //
-		/////////////
-		var err error
-
-		// GProtoAddFriendRequest.Account
-		if err = buffer.WriteString(addFriendRequest.Account); err != nil {
-			return nil, err
-		}
-
-		// GProtoAddFriendRequest.Desc
-		if err = buffer.WriteString(addFriendRequest.Desc); err != nil {
-			return nil, err
-		}
-
-		return buffer.Bytes(), nil
-	}
-
-	return nil, InvalidVersionError
-}
-
-func (addFriendRequest *GProtoAddFriendRequest) Decode(version uint16, buf []byte) error {
-	// 合法性判断
-	if len(buf) < 3 {
-		return InvalidDecodeBufferError
-	}
-
-	if version == 1 {
-		// New Buffer
-		buffer := NewGBuffer(buf)
-
-		/////////////
-		// Decode  //
-		/////////////
-		var err error
-
-		// GProtoAddFriendRequest.Account
-		if addFriendRequest.Account, err = buffer.ReadString(); err != nil {
-			return err
-		}
-
-		// GProtoAddFriendRequest.Desc
-		if addFriendRequest.Desc, err = buffer.ReadString(); err != nil {
-			return err
-		}
-
-		return nil
-	}
-
-	return InvalidVersionError
-}
-
-////////////////////////////////////
-// message AddFriendResponse {
-//     required uint8 code = 1;
-//     required string account = 2;
-//     required uint8 flag = 3;
-// }
-
-type GProtoAddFriendResponse struct {
-	Code    uint8
-	Account string
-	Flag    uint8
-}
-
-func (addFriendResponse *GProtoAddFriendResponse) Encode(version uint16) ([]byte, error) {
-	if version == 1 {
-		// New Buffer
-		buffer := NewEmptyGBuffer()
-
-		/////////////
-		// Encode  //
-		/////////////
-		var err error
-
-		// GProtoAddFriendResponse.Code
-		if err = buffer.WriteUInt8(addFriendResponse.Code); err != nil {
-			return nil, err
-		}
-
-		// GProtoAddFriendResponse.Account
-		if err = buffer.WriteString(addFriendResponse.Account); err != nil {
-			return nil, err
-		}
-
-		// GProtoAddFriendResponse.Flag
-		if err = buffer.WriteUInt8(addFriendResponse.Flag); err != nil {
-			return nil, err
-		}
-
-		return buffer.Bytes(), nil
-	}
-
-	return nil, InvalidVersionError
-}
-
-func (addFriendResponse *GProtoAddFriendResponse) Decode(version uint16, buf []byte) error {
-	// 合法性判断
-	if len(buf) < 3 {
-		return InvalidDecodeBufferError
-	}
-
-	if version == 1 {
-		// New Buffer
-		buffer := NewGBuffer(buf)
-
-		/////////////
-		// Decode  //
-		/////////////
-		var err error
-
-		// GProtoAddFriendResponse.Code
-		if err = buffer.ReadUInt8(&addFriendResponse.Code); err != nil {
-			return err
-		}
-
-		// GProtoAddFriendResponse.Account
-		if addFriendResponse.Account, err = buffer.ReadString(); err != nil {
-			return err
-		}
-
-		// GProtoAddFriendResponse.Flag
-		if err = buffer.ReadUInt8(&addFriendResponse.Flag); err != nil {
-			return err
-		}
-
-		return nil
-	}
-
-	return InvalidVersionError
-}
-
-////////////////////////////////////
-// message AddFriendNotify {
-//     required OtherUser user = 1;
-//     required string desc = 2;
-//     required uint8 flag = 3;
-//     required uint64 send_time = 4;
-//     required uint8 is_offline = 5;
-// }
-
-type GProtoAddFriendNotify struct {
-	User      *GProtoOtherUser
-	Desc      string
-	Flag      uint8
-	SendTime  uint64
-	IsOffline uint8
-}
-
-func (addFriendNotify *GProtoAddFriendNotify) Encode(version uint16) ([]byte, error) {
-	if version == 1 {
-		// New Buffer
-		buffer := NewEmptyGBuffer()
-
-		/////////////
-		// Encode  //
-		/////////////
-		var err error
-
-		// GProtoAddFriendNotify.User
-		if err = buffer.WriteStruct(1, addFriendNotify.User); err != nil {
-			return nil, err
-		}
-
-		// GProtoAddFriendNotify.Desc
-		if err = buffer.WriteString(addFriendNotify.Desc); err != nil {
-			return nil, err
-		}
-
-		// GProtoAddFriendNotify.Flag
-		if err = buffer.WriteUInt8(addFriendNotify.Flag); err != nil {
-			return nil, err
-		}
-
-		// GProtoAddFriendNotify.SendTime
-		if err = buffer.WriteUInt64(addFriendNotify.SendTime); err != nil {
-			return nil, err
-		}
-
-		// GProtoAddFriendNotify.IsOffline
-		if err = buffer.WriteUInt8(addFriendNotify.IsOffline); err != nil {
-			return nil, err
-		}
-
-		return buffer.Bytes(), nil
-	}
-
-	return nil, InvalidVersionError
-}
-
-func (addFriendNotify *GProtoAddFriendNotify) Decode(version uint16, buf []byte) error {
-	// 合法性判断
-	if len(buf) < 3 {
-		return InvalidDecodeBufferError
-	}
-
-	if version == 1 {
-		// New Buffer
-		buffer := NewGBuffer(buf)
-
-		/////////////
-		// Decode  //
-		/////////////
-		var err error
-
-		// GProtoAddFriendNotify.User
-		addFriendNotify.User = &GProtoOtherUser{}
-		if err = buffer.ReadStruct(1, addFriendNotify.User); err != nil {
-			return err
-		}
-
-		// GProtoAddFriendNotify.Desc
-		if addFriendNotify.Desc, err = buffer.ReadString(); err != nil {
-			return err
-		}
-
-		// GProtoAddFriendNotify.Flag
-		if err = buffer.ReadUInt8(&addFriendNotify.Flag); err != nil {
-			return err
-		}
-
-		// GProtoAddFriendNotify.SendTime
-		if err = buffer.ReadUInt64(&addFriendNotify.SendTime); err != nil {
-			return err
-		}
-
-		// GProtoAddFriendNotify.IsOffline
-		if err = buffer.ReadUInt8(&addFriendNotify.IsOffline); err != nil {
-			return err
-		}
-
-		return nil
-	}
-
-	return InvalidVersionError
-}
-
-////////////////////////////////////
-// message AnswerFriendRequest {
-//     required string account = 1;
-//     required string desc = 2;
-//     required uint8 ops = 3;
-// }
-
-const (
-	ANSWER_FRIEND_OPS_DENY          = 1
-	ANSWER_FRIEND_OPS_AGREE         = 2
-	ANSWER_FRIEND_OPS_AGREE_AND_ADD = 3
-)
-
-type GProtoAnswerFriendRequest struct {
-	Account string
-	Desc    string
-	Ops     uint8 // 1拒绝, 2同意, 3同意并添加
-}
-
-func (answerFriendRequest *GProtoAnswerFriendRequest) Encode(version uint16) ([]byte, error) {
-	if version == 1 {
-		// New Buffer
-		buffer := NewEmptyGBuffer()
-
-		/////////////
-		// Encode  //
-		/////////////
-		var err error
-
-		// GProtoAnswerFriendRequest.Account
-		if err = buffer.WriteString(answerFriendRequest.Account); err != nil {
-			return nil, err
-		}
-
-		// GProtoAnswerFriendRequest.Desc
-		if err = buffer.WriteString(answerFriendRequest.Desc); err != nil {
-			return nil, err
-		}
-
-		// GProtoAnswerFriendRequest.Ops
-		if err = buffer.WriteUInt8(answerFriendRequest.Ops); err != nil {
-			return nil, err
-		}
-
-		return buffer.Bytes(), nil
-	}
-
-	return nil, InvalidVersionError
-}
-
-func (answerFriendRequest *GProtoAnswerFriendRequest) Decode(version uint16, buf []byte) error {
-	// 合法性判断
-	if len(buf) < 3 {
-		return InvalidDecodeBufferError
-	}
-
-	if version == 1 {
-		// New Buffer
-		buffer := NewGBuffer(buf)
-
-		/////////////
-		// Decode  //
-		/////////////
-		var err error
-
-		// GProtoAnswerFriendRequest.Account
-		if answerFriendRequest.Account, err = buffer.ReadString(); err != nil {
-			return err
-		}
-
-		// GProtoAnswerFriendRequest.Desc
-		if answerFriendRequest.Desc, err = buffer.ReadString(); err != nil {
-			return err
-		}
-
-		// GProtoAnswerFriendRequest.Ops
-		if err = buffer.ReadUInt8(&answerFriendRequest.Ops); err != nil {
-			return err
-		}
-
-		return nil
-	}
-
-	return InvalidVersionError
-}
-
-////////////////////////////////////
-// message AnswerFriendResponse {
-//     required uint8 code = 1;
-//     required string account = 2;
-//     required uint8 flag = 3;
-//     required uint8 ops = 4;
-// }
-
-type GProtoAnswerFriendResponse struct {
-	Code    uint8
-	Account string
-	Flag    uint8
-	Ops     uint8
-}
-
-func (answerFriendResponse *GProtoAnswerFriendResponse) Encode(version uint16) ([]byte, error) {
-	if version == 1 {
-		// New Buffer
-		buffer := NewEmptyGBuffer()
-
-		/////////////
-		// Encode  //
-		/////////////
-		var err error
-
-		// GProtoAnswerFriendResponse.Code
-		if err = buffer.WriteUInt8(answerFriendResponse.Code); err != nil {
-			return nil, err
-		}
-
-		// GProtoAnswerFriendResponse.Account
-		if err = buffer.WriteString(answerFriendResponse.Account); err != nil {
-			return nil, err
-		}
-
-		// GProtoAnswerFriendResponse.Flag
-		if err = buffer.WriteUInt8(answerFriendResponse.Flag); err != nil {
-			return nil, err
-		}
-
-		// GProtoAnswerFriendResponse.Ops
-		if err = buffer.WriteUInt8(answerFriendResponse.Ops); err != nil {
-			return nil, err
-		}
-
-		return buffer.Bytes(), nil
-	}
-
-	return nil, InvalidVersionError
-}
-
-func (answerFriendResponse *GProtoAnswerFriendResponse) Decode(version uint16, buf []byte) error {
-	// 合法性判断
-	if len(buf) < 3 {
-		return InvalidDecodeBufferError
-	}
-
-	if version == 1 {
-		// New Buffer
-		buffer := NewGBuffer(buf)
-
-		/////////////
-		// Decode  //
-		/////////////
-		var err error
-
-		// GProtoAnswerFriendResponse.Code
-		if err = buffer.ReadUInt8(&answerFriendResponse.Code); err != nil {
-			return err
-		}
-
-		// GProtoAnswerFriendResponse.Account
-		if answerFriendResponse.Account, err = buffer.ReadString(); err != nil {
-			return err
-		}
-
-		// GProtoAnswerFriendResponse.Flag
-		if err = buffer.ReadUInt8(&answerFriendResponse.Flag); err != nil {
-			return err
-		}
-
-		// GProtoAnswerFriendResponse.Ops
-		if err = buffer.ReadUInt8(&answerFriendResponse.Ops); err != nil {
-			return err
-		}
-
-		return nil
-	}
-
-	return InvalidVersionError
-}
-
-////////////////////////////////////
-// message AnswerFriendNotify {
-//     required OtherUser user = 1;
-//     required string desc = 2;
-//     required uint8 flag = 3;
-//     required uint8 ops = 4;
-//     required uint64 send_time = 5;
-//     required uint8 is_offline = 6;
-// }
-
-type GProtoAnswerFriendNotify struct {
-	User      *GProtoOtherUser
-	Desc      string
-	Flag      uint8
-	Ops       uint8
-	SendTime  uint64
-	IsOffline uint8
-}
-
-func (answerFriendNotify *GProtoAnswerFriendNotify) Encode(version uint16) ([]byte, error) {
-	if version == 1 {
-		// New Buffer
-		buffer := NewEmptyGBuffer()
-
-		/////////////
-		// Encode  //
-		/////////////
-		var err error
-
-		// GProtoAnswerFriendNotify.User
-		if err = buffer.WriteStruct(1, answerFriendNotify.User); err != nil {
-			return nil, err
-		}
-
-		// GProtoAnswerFriendNotify.Desc
-		if err = buffer.WriteString(answerFriendNotify.Desc); err != nil {
-			return nil, err
-		}
-
-		// GProtoAnswerFriendNotify.Flag
-		if err = buffer.WriteUInt8(answerFriendNotify.Flag); err != nil {
-			return nil, err
-		}
-
-		// GProtoAnswerFriendNotify.Ops
-		if err = buffer.WriteUInt8(answerFriendNotify.Ops); err != nil {
-			return nil, err
-		}
-
-		// GProtoAnswerFriendNotify.SendTime
-		if err = buffer.WriteUInt64(answerFriendNotify.SendTime); err != nil {
-			return nil, err
-		}
-
-		// GProtoAnswerFriendNotify.IsOffline
-		if err = buffer.WriteUInt8(answerFriendNotify.IsOffline); err != nil {
-			return nil, err
-		}
-
-		return buffer.Bytes(), nil
-	}
-
-	return nil, InvalidVersionError
-}
-
-func (answerFriendNotify *GProtoAnswerFriendNotify) Decode(version uint16, buf []byte) error {
-	// 合法性判断
-	if len(buf) < 3 {
-		return InvalidDecodeBufferError
-	}
-
-	if version == 1 {
-		// New Buffer
-		buffer := NewGBuffer(buf)
-
-		/////////////
-		// Decode  //
-		/////////////
-		var err error
-
-		// GProtoAnswerFriendNotify.User
-		answerFriendNotify.User = &GProtoOtherUser{}
-		if err = buffer.ReadStruct(1, answerFriendNotify.User); err != nil {
-			return err
-		}
-
-		// GProtoAnswerFriendNotify.Desc
-		if answerFriendNotify.Desc, err = buffer.ReadString(); err != nil {
-			return err
-		}
-
-		// GProtoAnswerFriendNotify.Flag
-		if err = buffer.ReadUInt8(&answerFriendNotify.Flag); err != nil {
-			return err
-		}
-
-		// GProtoAnswerFriendNotify.Ops
-		if err = buffer.ReadUInt8(&answerFriendNotify.Ops); err != nil {
-			return err
-		}
-
-		// GProtoAnswerFriendNotify.SendTime
-		if err = buffer.ReadUInt64(&answerFriendNotify.SendTime); err != nil {
-			return err
-		}
-
-		// GProtoAnswerFriendNotify.IsOffline
-		if err = buffer.ReadUInt8(&answerFriendNotify.IsOffline); err != nil {
-			return err
-		}
-
-		return nil
-	}
-
-	return InvalidVersionError
-}
-
-////////////////////////////////////
-// message DelFriendRequest {
-//     required string account = 1;
-// 	   required uint8 ops = 2;
-// }
-
-const (
-	DEL_FRIEND_OPS_NORMAL = 1
-	DEL_FRIEND_OPS_BOTH   = 2
-)
-
-type GProtoDelFriendRequest struct {
-	Account string
-	Ops     uint8 // 1删除单向好友; 2把我也从对方列表中删除
-}
-
-func (delFriendRequest *GProtoDelFriendRequest) Encode(version uint16) ([]byte, error) {
-	if version == 1 {
-		// New Buffer
-		buffer := NewEmptyGBuffer()
-
-		/////////////
-		// Encode  //
-		/////////////
-		var err error
-
-		// GProtoDelFriendRequest.Account
-		if err = buffer.WriteString(delFriendRequest.Account); err != nil {
-			return nil, err
-		}
-
-		// GProtoDelFriendRequest.Ops
-		if err = buffer.WriteUInt8(delFriendRequest.Ops); err != nil {
-			return nil, err
-		}
-
-		return buffer.Bytes(), nil
-	}
-
-	return nil, InvalidVersionError
-}
-
-func (delFriendRequest *GProtoDelFriendRequest) Decode(version uint16, buf []byte) error {
-	// 合法性判断
-	if len(buf) < 3 {
-		return InvalidDecodeBufferError
-	}
-
-	if version == 1 {
-		// New Buffer
-		buffer := NewGBuffer(buf)
-
-		/////////////
-		// Decode  //
-		/////////////
-		var err error
-
-		// GProtoDelFriendRequest.Account
-		if delFriendRequest.Account, err = buffer.ReadString(); err != nil {
-			return err
-		}
-
-		// GProtoDelFriendRequest.Ops
-		if err = buffer.ReadUInt8(&delFriendRequest.Ops); err != nil {
-			return err
-		}
-
-		return nil
-	}
-
-	return InvalidVersionError
-}
-
-////////////////////////////////////
-// message DelFriendResponse {
-//     required uint8 code = 1;
-//     required string account = 2;
-//     required uint8 flag = 3;
-// }
-
-type GProtoDelFriendResponse struct {
-	Code    uint8
-	Account string
-	Flag    uint8
-}
-
-func (delFriendResponse *GProtoDelFriendResponse) Encode(version uint16) ([]byte, error) {
-	if version == 1 {
-		// New Buffer
-		buffer := NewEmptyGBuffer()
-
-		/////////////
-		// Encode  //
-		/////////////
-		var err error
-
-		// GProtoDelFriendResponse.Code
-		if err = buffer.WriteUInt8(delFriendResponse.Code); err != nil {
-			return nil, err
-		}
-
-		// GProtoDelFriendResponse.Account
-		if err = buffer.WriteString(delFriendResponse.Account); err != nil {
-			return nil, err
-		}
-
-		// GProtoDelFriendResponse.Flag
-		if err = buffer.WriteUInt8(delFriendResponse.Flag); err != nil {
-			return nil, err
-		}
-
-		return buffer.Bytes(), nil
-	}
-
-	return nil, InvalidVersionError
-}
-
-func (delFriendResponse *GProtoDelFriendResponse) Decode(version uint16, buf []byte) error {
-	// 合法性判断
-	if len(buf) < 3 {
-		return InvalidDecodeBufferError
-	}
-
-	if version == 1 {
-		// New Buffer
-		buffer := NewGBuffer(buf)
-
-		/////////////
-		// Decode  //
-		/////////////
-		var err error
-
-		// GProtoDelFriendResponse.Code
-		if err = buffer.ReadUInt8(&delFriendResponse.Code); err != nil {
-			return err
-		}
-
-		// GProtoDelFriendResponse.Account
-		if delFriendResponse.Account, err = buffer.ReadString(); err != nil {
-			return err
-		}
-
-		// GProtoDelFriendResponse.Flag
-		if err = buffer.ReadUInt8(&delFriendResponse.Flag); err != nil {
-			return err
-		}
-
-		return nil
-	}
-
-	return InvalidVersionError
-}
-
-////////////////////////////////////
-// message DelFriendNotify {
-//     required OtherUser user = 1;
-//     required uint8 flag = 2;
-//     required uint64 send_time = 3;
-//     required uint8 is_offline = 4;
-// }
-
-type GProtoDelFriendNotify struct {
-	User      *GProtoOtherUser
-	Flag      uint8
-	SendTime  uint64
-	IsOffline uint8
-}
-
-func (elFriendNotify *GProtoDelFriendNotify) Encode(version uint16) ([]byte, error) {
-	if version == 1 {
-		// New Buffer
-		buffer := NewEmptyGBuffer()
-
-		/////////////
-		// Encode  //
-		/////////////
-		var err error
-
-		// GProtoDelFriendNotify.User
-		if err = buffer.WriteStruct(1, elFriendNotify.User); err != nil {
-			return nil, err
-		}
-
-		// GProtoDelFriendNotify.Flag
-		if err = buffer.WriteUInt8(elFriendNotify.Flag); err != nil {
-			return nil, err
-		}
-
-		// GProtoDelFriendNotify.SendTime
-		if err = buffer.WriteUInt64(elFriendNotify.SendTime); err != nil {
-			return nil, err
-		}
-
-		// GProtoDelFriendNotify.IsOffline
-		if err = buffer.WriteUInt8(elFriendNotify.IsOffline); err != nil {
-			return nil, err
-		}
-
-		return buffer.Bytes(), nil
-	}
-
-	return nil, InvalidVersionError
-}
-
-func (elFriendNotify *GProtoDelFriendNotify) Decode(version uint16, buf []byte) error {
-	// 合法性判断
-	if len(buf) < 3 {
-		return InvalidDecodeBufferError
-	}
-
-	if version == 1 {
-		// New Buffer
-		buffer := NewGBuffer(buf)
-
-		/////////////
-		// Decode  //
-		/////////////
-		var err error
-
-		// GProtoDelFriendNotify.User
-		elFriendNotify.User = &GProtoOtherUser{}
-		if err = buffer.ReadStruct(1, elFriendNotify.User); err != nil {
-			return err
-		}
-
-		// GProtoDelFriendNotify.Flag
-		if err = buffer.ReadUInt8(&elFriendNotify.Flag); err != nil {
-			return err
-		}
-
-		// GProtoDelFriendNotify.SendTime
-		if err = buffer.ReadUInt64(&elFriendNotify.SendTime); err != nil {
-			return err
-		}
-
-		// GProtoDelFriendNotify.IsOffline
-		if err = buffer.ReadUInt8(&elFriendNotify.IsOffline); err != nil {
-			return err
-		}
-
-		return nil
-	}
-
-	return InvalidVersionError
-}
-
-////////////////////////////////////
-// message GetFriendsRequest {
-//     required string customVersion = 1;
-// }
-
-type GProtoGetFriendsRequest struct {
-	CustomVersion string
-}
-
-func (getFriendsRequest *GProtoGetFriendsRequest) Encode(version uint16) ([]byte, error) {
-	if version == 1 {
-
-		/////////////
-		// Encode  //
-		/////////////
-
-		// New Buffer
-		buffer := NewEmptyGBuffer()
-
-		/////////////
-		// Encode  //
-		/////////////
-		var err error
-
-		// GProtoGetFriendsRequest.CustomVersion
-		if err = buffer.WriteString(getFriendsRequest.CustomVersion); err != nil {
-			return nil, err
-		}
-
-		return buffer.Bytes(), nil
-	}
-
-	return nil, InvalidVersionError
-}
-
-func (getFriendsRequest *GProtoGetFriendsRequest) Decode(version uint16, buf []byte) error {
-	if version == 1 {
-
-		/////////////
-		// Decode  //
-		/////////////
-
-		// New Buffer
-		buffer := NewGBuffer(buf)
-
-		/////////////
-		// Decode  //
-		/////////////
-		var err error
-
-		// GProtoGetFriendsRequest.CustomVersion
-		if getFriendsRequest.CustomVersion, err = buffer.ReadString(); err != nil {
-			return err
-		}
-
-		return nil
-	}
-
-	return InvalidVersionError
-}
-
-////////////////////////////////////
-// message GetFriendsResponse {
-//     required uint8 code = 1;
-//     repeated Friend friends = 2;
-//     optional string CustomVersion = 3;
-// }
-
-type GProtoGetFriendsResponse struct {
-	Code              uint8
-	Friends           []*GProtoFriend
-	CustomVersion     string // optional
-	CustomVersionFlag uint8
-}
-
-func (getFriendsResponse *GProtoGetFriendsResponse) Encode(version uint16) ([]byte, error) {
-	if version == 1 {
-		// New Buffer
-		buffer := NewEmptyGBuffer()
-
-		/////////////
-		// Encode  //
-		/////////////
-		var err error
-
-		// GProtoGetFriendsResponse.Code
-		if err = buffer.WriteUInt8(getFriendsResponse.Code); err != nil {
-			return nil, err
-		}
-
-		// GProtoGetFriendsResponse.Friends [array]
-		if err = buffer.WriteArray(1, getFriendsResponse.Friends); err != nil {
-			return nil, err
-		}
-
-		// GProtoGetFriendsResponse.CustomVersion [optional]
-		if getFriendsResponse.CustomVersionFlag == OPTIONAL_FALSE {
-			if err = buffer.WriteUInt8(OPTIONAL_FALSE); err != nil {
-				return nil, err
-			}
-		} else {
-			if err = buffer.WriteUInt8(OPTIONAL_TRUE); err != nil {
-				return nil, err
-			}
-			if err = buffer.WriteString(getFriendsResponse.CustomVersion); err != nil {
-				return nil, err
-			}
-		}
-
-		return buffer.Bytes(), nil
-	}
-
-	return nil, InvalidVersionError
-}
-
-func (getFriendsResponse *GProtoGetFriendsResponse) Decode(version uint16, buf []byte) error {
-	// 合法性判断
-	if len(buf) < 1 {
-		return InvalidDecodeBufferError
-	}
-
-	if version == 1 {
-		// New Buffer
-		buffer := NewGBuffer(buf)
-
-		/////////////
-		// Decode  //
-		/////////////
-		var err error
-
-		// GProtoGetFriendsResponse.Code
-		if err = buffer.ReadUInt8(&getFriendsResponse.Code); err != nil {
-			return err
-		}
-
-		// GProtoGetFriendsResponse.Friends [array]
-		var friendsNum uint16
-		if err = buffer.ReadUInt16(&friendsNum); err != nil {
-			return err
-		} else {
-			getFriendsResponse.Friends = make([]*GProtoFriend, friendsNum, friendsNum)
-			for i := 0; i < int(friendsNum); i++ {
-				var lenObj uint16
-				if err = buffer.ReadUInt16(&lenObj); err != nil {
-					return err
-				} else {
-					if bufObj, err := buffer.ReadRawBytes(lenObj); err != nil {
-						return err
-					} else {
-						getFriendsResponse.Friends[i] = &GProtoFriend{}
-						if err = getFriendsResponse.Friends[i].Decode(1, bufObj); err != nil {
-							return err
-						}
-					}
-				}
-			}
-		}
-
-		// GProtoGetFriendsResponse.CustomVersion [optional]
-		if err = buffer.ReadUInt8(&getFriendsResponse.CustomVersionFlag); err != nil {
-			return err
-		}
-		if getFriendsResponse.CustomVersionFlag == OPTIONAL_TRUE {
-			if getFriendsResponse.CustomVersion, err = buffer.ReadString(); err != nil {
-				return err
-			}
-		}
-
-		return nil
-	}
-
 	return InvalidVersionError
 }
 
@@ -1913,53 +738,25 @@ type GProtoGetChatRoomInfoRequest struct {
 
 func (getChatRoomInfoRequest *GProtoGetChatRoomInfoRequest) Encode(version uint16) ([]byte, error) {
 	if version == 1 {
-
-		/////////////
-		// Encode  //
-		/////////////
-
-		// New Buffer
 		buffer := NewEmptyGBuffer()
-
-		/////////////
-		// Encode  //
-		/////////////
 		var err error
-
-		// GProtoGetChatRoomInfoRequest.ChatRoomId
 		if err = buffer.WriteString(getChatRoomInfoRequest.ChatRoomId); err != nil {
 			return nil, err
 		}
-
 		return buffer.Bytes(), nil
 	}
-
 	return nil, InvalidVersionError
 }
 
 func (getChatRoomInfoRequest *GProtoGetChatRoomInfoRequest) Decode(version uint16, buf []byte) error {
 	if version == 1 {
-
-		/////////////
-		// Decode  //
-		/////////////
-
-		// New Buffer
 		buffer := NewGBuffer(buf)
-
-		/////////////
-		// Decode  //
-		/////////////
 		var err error
-
-		// GProtoGetChatRoomInfoRequest.ChatRoomId
 		if getChatRoomInfoRequest.ChatRoomId, err = buffer.ReadString(); err != nil {
 			return err
 		}
-
 		return nil
 	}
-
 	return InvalidVersionError
 }
 
@@ -1970,43 +767,22 @@ func (getChatRoomInfoRequest *GProtoGetChatRoomInfoRequest) Decode(version uint1
 // }
 
 type GProtoGetChatRoomInfoResponse struct {
-	Code     uint8
-	Info     *GProtoChatRoomInfo // optional
-	InfoFlag uint8
+	Code uint8
+	Info *GProtoChatRoomInfo
 }
 
 func (getChatRoomInfoResponse *GProtoGetChatRoomInfoResponse) Encode(version uint16) ([]byte, error) {
 	if version == 1 {
-		// New Buffer
 		buffer := NewEmptyGBuffer()
-
-		/////////////
-		// Encode  //
-		/////////////
 		var err error
-
-		// GProtoGetChatRoomInfoResponse.Code
 		if err = buffer.WriteUInt8(getChatRoomInfoResponse.Code); err != nil {
 			return nil, err
 		}
-
-		// GProtoGetChatRoomInfoResponse.Info [optional]
-		if getChatRoomInfoResponse.InfoFlag == OPTIONAL_FALSE {
-			if err = buffer.WriteUInt8(OPTIONAL_FALSE); err != nil {
-				return nil, err
-			}
-		} else {
-			if err = buffer.WriteUInt8(OPTIONAL_TRUE); err != nil {
-				return nil, err
-			}
-			if err = buffer.WriteStruct(1, getChatRoomInfoResponse.Info); err != nil {
-				return nil, err
-			}
+		if err = buffer.WriteStruct(1, getChatRoomInfoResponse.Info); err != nil {
+			return nil, err
 		}
-
 		return buffer.Bytes(), nil
 	}
-
 	return nil, InvalidVersionError
 }
 
@@ -2015,36 +791,17 @@ func (getChatRoomInfoResponse *GProtoGetChatRoomInfoResponse) Decode(version uin
 	if len(buf) < 1 {
 		return InvalidDecodeBufferError
 	}
-
 	if version == 1 {
-		// New Buffer
 		buffer := NewGBuffer(buf)
-
-		/////////////
-		// Decode  //
-		/////////////
 		var err error
-
-		// GProtoGetChatRoomInfoResponse.Code
 		if err = buffer.ReadUInt8(&getChatRoomInfoResponse.Code); err != nil {
 			return err
 		}
-
-		// GProtoGetChatRoomInfoResponse.Info [optional]
-		if err = buffer.ReadUInt8(&getChatRoomInfoResponse.InfoFlag); err != nil {
+		if err = buffer.ReadStruct(1, getChatRoomInfoResponse.Info); err != nil {
 			return err
 		}
-		if getChatRoomInfoResponse.InfoFlag == OPTIONAL_TRUE {
-			getChatRoomInfoResponse.Info = &GProtoChatRoomInfo{}
-			if err = buffer.ReadStruct(1, getChatRoomInfoResponse.Info); err != nil {
-				return err
-			}
-
-		}
-
 		return nil
 	}
-
 	return InvalidVersionError
 }
 
@@ -2059,53 +816,25 @@ type GProtoEnterChatRoomRequest struct {
 
 func (enterChatRoomRequest *GProtoEnterChatRoomRequest) Encode(version uint16) ([]byte, error) {
 	if version == 1 {
-
-		/////////////
-		// Encode  //
-		/////////////
-
-		// New Buffer
 		buffer := NewEmptyGBuffer()
-
-		/////////////
-		// Encode  //
-		/////////////
 		var err error
-
-		// GProtoEnterChatRoomRequest.ChatRoomId
 		if err = buffer.WriteString(enterChatRoomRequest.ChatRoomId); err != nil {
 			return nil, err
 		}
-
 		return buffer.Bytes(), nil
 	}
-
 	return nil, InvalidVersionError
 }
 
 func (enterChatRoomRequest *GProtoEnterChatRoomRequest) Decode(version uint16, buf []byte) error {
 	if version == 1 {
-
-		/////////////
-		// Decode  //
-		/////////////
-
-		// New Buffer
 		buffer := NewGBuffer(buf)
-
-		/////////////
-		// Decode  //
-		/////////////
 		var err error
-
-		// GProtoEnterChatRoomRequest.ChatRoomId
 		if enterChatRoomRequest.ChatRoomId, err = buffer.ReadString(); err != nil {
 			return err
 		}
-
 		return nil
 	}
-
 	return InvalidVersionError
 }
 
@@ -2117,49 +846,26 @@ func (enterChatRoomRequest *GProtoEnterChatRoomRequest) Decode(version uint16, b
 // }
 
 type GProtoEnterChatRoomResponse struct {
-	Code     uint8
-	Info     *GProtoChatRoomInfo // optional
-	InfoFlag uint8
-	Users    []*GProtoOtherUser
+	Code  uint8
+	Info  *GProtoChatRoomInfo
+	Users []*GProtoOtherUser
 }
 
 func (enterChatRoomResponse *GProtoEnterChatRoomResponse) Encode(version uint16) ([]byte, error) {
 	if version == 1 {
-		// New Buffer
 		buffer := NewEmptyGBuffer()
-
-		/////////////
-		// Encode  //
-		/////////////
 		var err error
-
-		// GProtoEnterChatRoomResponse.Code
 		if err = buffer.WriteUInt8(enterChatRoomResponse.Code); err != nil {
 			return nil, err
 		}
-
-		// GProtoEnterChatRoomResponse.Info [optional]
-		if enterChatRoomResponse.InfoFlag == OPTIONAL_FALSE {
-			if err = buffer.WriteUInt8(OPTIONAL_FALSE); err != nil {
-				return nil, err
-			}
-		} else {
-			if err = buffer.WriteUInt8(OPTIONAL_TRUE); err != nil {
-				return nil, err
-			}
-			if err = buffer.WriteStruct(1, enterChatRoomResponse.Info); err != nil {
-				return nil, err
-			}
+		if err = buffer.WriteStruct(1, enterChatRoomResponse.Info); err != nil {
+			return nil, err
 		}
-
-		// GProtoEnterChatRoomResponse.Users [array]
 		if err = buffer.WriteArray(1, enterChatRoomResponse.Users); err != nil {
 			return nil, err
 		}
-
 		return buffer.Bytes(), nil
 	}
-
 	return nil, InvalidVersionError
 }
 
@@ -2168,34 +874,15 @@ func (enterChatRoomResponse *GProtoEnterChatRoomResponse) Decode(version uint16,
 	if len(buf) < 1 {
 		return InvalidDecodeBufferError
 	}
-
 	if version == 1 {
-		// New Buffer
 		buffer := NewGBuffer(buf)
-
-		/////////////
-		// Decode  //
-		/////////////
 		var err error
-
-		// GProtoEnterChatRoomResponse.Code
 		if err = buffer.ReadUInt8(&enterChatRoomResponse.Code); err != nil {
 			return err
 		}
-
-		// GProtoEnterChatRoomResponse.Info [optional]
-		if err = buffer.ReadUInt8(&enterChatRoomResponse.InfoFlag); err != nil {
+		if err = buffer.ReadStruct(1, enterChatRoomResponse.Info); err != nil {
 			return err
 		}
-		if enterChatRoomResponse.InfoFlag == OPTIONAL_TRUE {
-			enterChatRoomResponse.Info = &GProtoChatRoomInfo{}
-			if err = buffer.ReadStruct(1, enterChatRoomResponse.Info); err != nil {
-				return err
-			}
-
-		}
-
-		// GProtoEnterChatRoomResponse.Users [array]
 		var usersNum uint16
 		if err = buffer.ReadUInt16(&usersNum); err != nil {
 			return err
@@ -2217,10 +904,8 @@ func (enterChatRoomResponse *GProtoEnterChatRoomResponse) Decode(version uint16,
 				}
 			}
 		}
-
 		return nil
 	}
-
 	return InvalidVersionError
 }
 
@@ -2237,64 +922,32 @@ type GProtoEnterChatRoomNotify struct {
 
 func (enterChatRoomNotify *GProtoEnterChatRoomNotify) Encode(version uint16) ([]byte, error) {
 	if version == 1 {
-
-		/////////////
-		// Encode  //
-		/////////////
-
-		// New Buffer
 		buffer := NewEmptyGBuffer()
-
-		/////////////
-		// Encode  //
-		/////////////
 		var err error
-
-		// GProtoEnterChatRoomNotify.ChatRoomId
 		if err = buffer.WriteString(enterChatRoomNotify.ChatRoomId); err != nil {
 			return nil, err
 		}
-
-		// GProtoEnterChatRoomNotify.User
 		if err = buffer.WriteStruct(1, enterChatRoomNotify.User); err != nil {
 			return nil, err
 		}
-
 		return buffer.Bytes(), nil
 	}
-
 	return nil, InvalidVersionError
 }
 
 func (enterChatRoomNotify *GProtoEnterChatRoomNotify) Decode(version uint16, buf []byte) error {
 	if version == 1 {
-
-		/////////////
-		// Decode  //
-		/////////////
-
-		// New Buffer
 		buffer := NewGBuffer(buf)
-
-		/////////////
-		// Decode  //
-		/////////////
 		var err error
-
-		// GProtoEnterChatRoomNotify.ChatRoomId
 		if enterChatRoomNotify.ChatRoomId, err = buffer.ReadString(); err != nil {
 			return err
 		}
-
-		// GProtoEnterChatRoomNotify.User
 		enterChatRoomNotify.User = &GProtoOtherUser{}
 		if err = buffer.ReadStruct(1, enterChatRoomNotify.User); err != nil {
 			return err
 		}
-
 		return nil
 	}
-
 	return InvalidVersionError
 }
 
@@ -2309,53 +962,25 @@ type GProtoLeaveChatRoomRequest struct {
 
 func (leaveChatRoomRequest *GProtoLeaveChatRoomRequest) Encode(version uint16) ([]byte, error) {
 	if version == 1 {
-
-		/////////////
-		// Encode  //
-		/////////////
-
-		// New Buffer
 		buffer := NewEmptyGBuffer()
-
-		/////////////
-		// Encode  //
-		/////////////
 		var err error
-
-		// GProtoLeaveChatRoomRequest.ChatRoomId
 		if err = buffer.WriteString(leaveChatRoomRequest.ChatRoomId); err != nil {
 			return nil, err
 		}
-
 		return buffer.Bytes(), nil
 	}
-
 	return nil, InvalidVersionError
 }
 
 func (leaveChatRoomRequest *GProtoLeaveChatRoomRequest) Decode(version uint16, buf []byte) error {
 	if version == 1 {
-
-		/////////////
-		// Decode  //
-		/////////////
-
-		// New Buffer
 		buffer := NewGBuffer(buf)
-
-		/////////////
-		// Decode  //
-		/////////////
 		var err error
-
-		// GProtoLeaveChatRoomRequest.ChatRoomId
 		if leaveChatRoomRequest.ChatRoomId, err = buffer.ReadString(); err != nil {
 			return err
 		}
-
 		return nil
 	}
-
 	return InvalidVersionError
 }
 
@@ -2366,84 +991,37 @@ func (leaveChatRoomRequest *GProtoLeaveChatRoomRequest) Decode(version uint16, b
 // }
 
 type GProtoLeaveChatRoomResponse struct {
-	Code           uint8
-	ChatRoomId     string // optional
-	ChatRoomIdFlag uint8
+	Code       uint8
+	ChatRoomId string
 }
 
 func (leaveChatRoomResponse *GProtoLeaveChatRoomResponse) Encode(version uint16) ([]byte, error) {
 	if version == 1 {
-
-		/////////////
-		// Encode  //
-		/////////////
-
-		// New Buffer
 		buffer := NewEmptyGBuffer()
-
-		/////////////
-		// Encode  //
-		/////////////
 		var err error
-
-		// GProtoLeaveChatRoomResponse.Code
 		if err = buffer.WriteUInt8(leaveChatRoomResponse.Code); err != nil {
 			return nil, err
 		}
-
-		// GProtoLeaveChatRoomResponse.ChatRoomId [optional]
-		if leaveChatRoomResponse.ChatRoomIdFlag == OPTIONAL_FALSE {
-			if err = buffer.WriteUInt8(OPTIONAL_FALSE); err != nil {
-				return nil, err
-			}
-		} else {
-			if err = buffer.WriteUInt8(OPTIONAL_TRUE); err != nil {
-				return nil, err
-			}
-			if err = buffer.WriteString(leaveChatRoomResponse.ChatRoomId); err != nil {
-				return nil, err
-			}
+		if err = buffer.WriteString(leaveChatRoomResponse.ChatRoomId); err != nil {
+			return nil, err
 		}
-
 		return buffer.Bytes(), nil
 	}
-
 	return nil, InvalidVersionError
 }
 
 func (leaveChatRoomResponse *GProtoLeaveChatRoomResponse) Decode(version uint16, buf []byte) error {
 	if version == 1 {
-
-		/////////////
-		// Decode  //
-		/////////////
-
-		// New Buffer
 		buffer := NewGBuffer(buf)
-
-		/////////////
-		// Decode  //
-		/////////////
 		var err error
-
-		// GProtoLeaveChatRoomResponse.Code
 		if err = buffer.ReadUInt8(&leaveChatRoomResponse.Code); err != nil {
 			return err
 		}
-
-		// GProtoLeaveChatRoomResponse.ChatRoomId [optional]
-		if err = buffer.ReadUInt8(&leaveChatRoomResponse.ChatRoomIdFlag); err != nil {
+		if leaveChatRoomResponse.ChatRoomId, err = buffer.ReadString(); err != nil {
 			return err
 		}
-		if leaveChatRoomResponse.ChatRoomIdFlag == OPTIONAL_TRUE {
-			if leaveChatRoomResponse.ChatRoomId, err = buffer.ReadString(); err != nil {
-				return err
-			}
-		}
-
 		return nil
 	}
-
 	return InvalidVersionError
 }
 
@@ -2460,63 +1038,31 @@ type GProtoLeaveChatRoomNotify struct {
 
 func (leaveChatRoomNotify *GProtoLeaveChatRoomNotify) Encode(version uint16) ([]byte, error) {
 	if version == 1 {
-
-		/////////////
-		// Encode  //
-		/////////////
-
-		// New Buffer
 		buffer := NewEmptyGBuffer()
-
-		/////////////
-		// Encode  //
-		/////////////
 		var err error
-
-		// GProtoLeaveChatRoomNotify.ChatRoomId
 		if err = buffer.WriteString(leaveChatRoomNotify.ChatRoomId); err != nil {
 			return nil, err
 		}
-
-		// GProtoLeaveChatRoomNotify.Account
 		if err = buffer.WriteString(leaveChatRoomNotify.Account); err != nil {
 			return nil, err
 		}
-
 		return buffer.Bytes(), nil
 	}
-
 	return nil, InvalidVersionError
 }
 
 func (leaveChatRoomNotify *GProtoLeaveChatRoomNotify) Decode(version uint16, buf []byte) error {
 	if version == 1 {
-
-		/////////////
-		// Decode  //
-		/////////////
-
-		// New Buffer
 		buffer := NewGBuffer(buf)
-
-		/////////////
-		// Decode  //
-		/////////////
 		var err error
-
-		// GProtoLeaveChatRoomNotify.ChatRoomId
 		if leaveChatRoomNotify.ChatRoomId, err = buffer.ReadString(); err != nil {
 			return err
 		}
-
-		// GProtoLeaveChatRoomNotify.Account
 		if leaveChatRoomNotify.Account, err = buffer.ReadString(); err != nil {
 			return err
 		}
-
 		return nil
 	}
-
 	return InvalidVersionError
 }
 
@@ -2532,63 +1078,31 @@ type GProtoChatRoomKickoffNotify struct {
 
 func (chatRoomKickoffNotify *GProtoChatRoomKickoffNotify) Encode(version uint16) ([]byte, error) {
 	if version == 1 {
-
-		/////////////
-		// Encode  //
-		/////////////
-
-		// New Buffer
 		buffer := NewEmptyGBuffer()
-
-		/////////////
-		// Encode  //
-		/////////////
 		var err error
-
-		// GProtoChatRoomKickoffNotify.ChatRoomId
 		if err = buffer.WriteString(chatRoomKickoffNotify.ChatRoomId); err != nil {
 			return nil, err
 		}
-
-		// GProtoChatRoomKickoffNotify.Account
 		if err = buffer.WriteString(chatRoomKickoffNotify.Account); err != nil {
 			return nil, err
 		}
-
 		return buffer.Bytes(), nil
 	}
-
 	return nil, InvalidVersionError
 }
 
 func (chatRoomKickoffNotify *GProtoChatRoomKickoffNotify) Decode(version uint16, buf []byte) error {
 	if version == 1 {
-
-		/////////////
-		// Decode  //
-		/////////////
-
-		// New Buffer
 		buffer := NewGBuffer(buf)
-
-		/////////////
-		// Decode  //
-		/////////////
 		var err error
-
-		// GProtoChatRoomKickoffNotify.ChatRoomId
 		if chatRoomKickoffNotify.ChatRoomId, err = buffer.ReadString(); err != nil {
 			return err
 		}
-
-		// GProtoChatRoomKickoffNotify.Account
 		if chatRoomKickoffNotify.Account, err = buffer.ReadString(); err != nil {
 			return err
 		}
-
 		return nil
 	}
-
 	return InvalidVersionError
 }
 
@@ -2605,67 +1119,26 @@ func (chatRoomKickoffNotify *GProtoChatRoomKickoffNotify) Decode(version uint16,
 // }
 
 type GProtoCreateGroupRequest struct {
-	GroupId         string // optional
-	GroupIdFlag     uint8
-	Name            string // optional
-	NameFlag        uint8
-	Avatar          string // optional
+	GroupId         string
+	Name            string
+	Avatar          string
 	AvatarFlag      uint8
 	Description     string // optional
 	DescriptionFlag uint8
 	MaxUser         uint16 // optional
 	MaxUserFlag     uint8
-	Data            string // optional
-	DataFlag        uint8
-	Flag            uint8 // optional
-	FlagFlag        uint8
-	InviteTos       []string
 }
 
 func (createGroupRequest *GProtoCreateGroupRequest) Encode(version uint16) ([]byte, error) {
 	if version == 1 {
-
-		/////////////
-		// Encode  //
-		/////////////
-
-		// New Buffer
 		buffer := NewEmptyGBuffer()
-
-		/////////////
-		// Encode  //
-		/////////////
 		var err error
-
-		// GProtoCreateGroupRequest.GroupId [optional]
-		if createGroupRequest.GroupIdFlag == OPTIONAL_FALSE {
-			if err = buffer.WriteUInt8(OPTIONAL_FALSE); err != nil {
-				return nil, err
-			}
-		} else {
-			if err = buffer.WriteUInt8(OPTIONAL_TRUE); err != nil {
-				return nil, err
-			}
-			if err = buffer.WriteString(createGroupRequest.GroupId); err != nil {
-				return nil, err
-			}
+		if err = buffer.WriteString(createGroupRequest.GroupId); err != nil {
+			return nil, err
 		}
-
-		// GProtoCreateGroupRequest.Name [optional]
-		if createGroupRequest.NameFlag == OPTIONAL_FALSE {
-			if err = buffer.WriteUInt8(OPTIONAL_FALSE); err != nil {
-				return nil, err
-			}
-		} else {
-			if err = buffer.WriteUInt8(OPTIONAL_TRUE); err != nil {
-				return nil, err
-			}
-			if err = buffer.WriteString(createGroupRequest.Name); err != nil {
-				return nil, err
-			}
+		if err = buffer.WriteString(createGroupRequest.Name); err != nil {
+			return nil, err
 		}
-
-		// GProtoCreateGroupRequest.Avatar [optional]
 		if createGroupRequest.AvatarFlag == OPTIONAL_FALSE {
 			if err = buffer.WriteUInt8(OPTIONAL_FALSE); err != nil {
 				return nil, err
@@ -2678,8 +1151,6 @@ func (createGroupRequest *GProtoCreateGroupRequest) Encode(version uint16) ([]by
 				return nil, err
 			}
 		}
-
-		// GProtoCreateGroupRequest.Description [optional]
 		if createGroupRequest.DescriptionFlag == OPTIONAL_FALSE {
 			if err = buffer.WriteUInt8(OPTIONAL_FALSE); err != nil {
 				return nil, err
@@ -2692,8 +1163,6 @@ func (createGroupRequest *GProtoCreateGroupRequest) Encode(version uint16) ([]by
 				return nil, err
 			}
 		}
-
-		// GProtoCreateGroupRequest.MaxUser [optional]
 		if createGroupRequest.MaxUserFlag == OPTIONAL_FALSE {
 			if err = buffer.WriteUInt8(OPTIONAL_FALSE); err != nil {
 				return nil, err
@@ -2706,49 +1175,8 @@ func (createGroupRequest *GProtoCreateGroupRequest) Encode(version uint16) ([]by
 				return nil, err
 			}
 		}
-
-		// GProtoCreateGroupRequest.Data [optional]
-		if createGroupRequest.DataFlag == OPTIONAL_FALSE {
-			if err = buffer.WriteUInt8(OPTIONAL_FALSE); err != nil {
-				return nil, err
-			}
-		} else {
-			if err = buffer.WriteUInt8(OPTIONAL_TRUE); err != nil {
-				return nil, err
-			}
-			if err = buffer.WriteString(createGroupRequest.Data); err != nil {
-				return nil, err
-			}
-		}
-
-		// GProtoCreateGroupRequest.Flag [optional]
-		if createGroupRequest.FlagFlag == OPTIONAL_FALSE {
-			if err = buffer.WriteUInt8(OPTIONAL_FALSE); err != nil {
-				return nil, err
-			}
-		} else {
-			if err = buffer.WriteUInt8(OPTIONAL_TRUE); err != nil {
-				return nil, err
-			}
-			if err = buffer.WriteUInt8(createGroupRequest.Flag); err != nil {
-				return nil, err
-			}
-		}
-
-		// GProtoCreateGroupRequest.InviteTos [array]
-		inviteTosNum := len(createGroupRequest.InviteTos)
-		if err := buffer.WriteUInt16(uint16(inviteTosNum)); err != nil {
-			return nil, err
-		}
-		for i := 0; i < inviteTosNum; i++ {
-			if err = buffer.WriteString(createGroupRequest.InviteTos[i]); err != nil {
-				return nil, err
-			}
-		}
-
 		return buffer.Bytes(), nil
 	}
-
 	return nil, InvalidVersionError
 }
 
@@ -2757,42 +1185,15 @@ func (createGroupRequest *GProtoCreateGroupRequest) Decode(version uint16, buf [
 	if len(buf) < 1 {
 		return InvalidDecodeBufferError
 	}
-
 	if version == 1 {
-
-		/////////////
-		// Decode  //
-		/////////////
-
-		// New Buffer
 		buffer := NewGBuffer(buf)
-
-		/////////////
-		// Decode  //
-		/////////////
 		var err error
-
-		// GProtoCreateGroupRequest.GroupId [optional]
-		if err = buffer.ReadUInt8(&createGroupRequest.GroupIdFlag); err != nil {
+		if createGroupRequest.GroupId, err = buffer.ReadString(); err != nil {
 			return err
 		}
-		if createGroupRequest.GroupIdFlag == OPTIONAL_TRUE {
-			if createGroupRequest.GroupId, err = buffer.ReadString(); err != nil {
-				return err
-			}
-		}
-
-		// GProtoCreateGroupRequest.Name [optional]
-		if err = buffer.ReadUInt8(&createGroupRequest.NameFlag); err != nil {
+		if createGroupRequest.Name, err = buffer.ReadString(); err != nil {
 			return err
 		}
-		if createGroupRequest.NameFlag == OPTIONAL_TRUE {
-			if createGroupRequest.Name, err = buffer.ReadString(); err != nil {
-				return err
-			}
-		}
-
-		// GProtoCreateGroupRequest.Avatar [optional]
 		if err = buffer.ReadUInt8(&createGroupRequest.AvatarFlag); err != nil {
 			return err
 		}
@@ -2801,8 +1202,6 @@ func (createGroupRequest *GProtoCreateGroupRequest) Decode(version uint16, buf [
 				return err
 			}
 		}
-
-		// GProtoCreateGroupRequest.Description [optional]
 		if err = buffer.ReadUInt8(&createGroupRequest.DescriptionFlag); err != nil {
 			return err
 		}
@@ -2811,8 +1210,6 @@ func (createGroupRequest *GProtoCreateGroupRequest) Decode(version uint16, buf [
 				return err
 			}
 		}
-
-		// GProtoCreateGroupRequest.MaxUser [optional]
 		if err = buffer.ReadUInt8(&createGroupRequest.MaxUserFlag); err != nil {
 			return err
 		}
@@ -2821,43 +1218,8 @@ func (createGroupRequest *GProtoCreateGroupRequest) Decode(version uint16, buf [
 				return err
 			}
 		}
-
-		// GProtoCreateGroupRequest.Data [optional]
-		if err = buffer.ReadUInt8(&createGroupRequest.DataFlag); err != nil {
-			return err
-		}
-		if createGroupRequest.DataFlag == OPTIONAL_TRUE {
-			if createGroupRequest.Data, err = buffer.ReadString(); err != nil {
-				return err
-			}
-		}
-
-		// GProtoCreateGroupRequest.Flag [optional]
-		if err = buffer.ReadUInt8(&createGroupRequest.FlagFlag); err != nil {
-			return err
-		}
-		if createGroupRequest.FlagFlag == OPTIONAL_TRUE {
-			if err = buffer.ReadUInt8(&createGroupRequest.Flag); err != nil {
-				return err
-			}
-		}
-
-		// GProtoCreateGroupRequest.InviteTos [array]
-		var inviteTosNum uint16
-		if err = buffer.ReadUInt16(&inviteTosNum); err != nil {
-			return err
-		} else {
-			createGroupRequest.InviteTos = make([]string, inviteTosNum, inviteTosNum)
-			for i := 0; i < int(inviteTosNum); i++ {
-				if createGroupRequest.InviteTos[i], err = buffer.ReadString(); err != nil {
-					return err
-				}
-			}
-		}
-
 		return nil
 	}
-
 	return InvalidVersionError
 }
 
@@ -2868,48 +1230,22 @@ func (createGroupRequest *GProtoCreateGroupRequest) Decode(version uint16, buf [
 // }
 
 type GProtoCreateGroupResponse struct {
-	Code     uint8
-	Info     *GProtoGroupInfo // optional
-	InfoFlag uint8
+	Code uint8
+	Info *GProtoGroupInfo // optional
 }
 
 func (createGroupResponse *GProtoCreateGroupResponse) Encode(version uint16) ([]byte, error) {
 	if version == 1 {
-
-		/////////////
-		// Encode  //
-		/////////////
-
-		// New Buffer
 		buffer := NewEmptyGBuffer()
-
-		/////////////
-		// Encode  //
-		/////////////
 		var err error
-
-		// GProtoCreateGroupResponse.Code
 		if err = buffer.WriteUInt8(createGroupResponse.Code); err != nil {
 			return nil, err
 		}
-
-		// GProtoCreateGroupResponse.Info [optional]
-		if createGroupResponse.InfoFlag == OPTIONAL_FALSE {
-			if err = buffer.WriteUInt8(OPTIONAL_FALSE); err != nil {
-				return nil, err
-			}
-		} else {
-			if err = buffer.WriteUInt8(OPTIONAL_TRUE); err != nil {
-				return nil, err
-			}
-			if err = buffer.WriteStruct(1, createGroupResponse.Info); err != nil {
-				return nil, err
-			}
+		if err = buffer.WriteStruct(1, createGroupResponse.Info); err != nil {
+			return nil, err
 		}
-
 		return buffer.Bytes(), nil
 	}
-
 	return nil, InvalidVersionError
 }
 
@@ -2918,36 +1254,18 @@ func (createGroupResponse *GProtoCreateGroupResponse) Decode(version uint16, buf
 	if len(buf) < 1 {
 		return InvalidDecodeBufferError
 	}
-
 	if version == 1 {
-		// New Buffer
 		buffer := NewGBuffer(buf)
-
-		/////////////
-		// Decode  //
-		/////////////
 		var err error
-
-		// GProtoCreateGroupResponse.Code
 		if err = buffer.ReadUInt8(&createGroupResponse.Code); err != nil {
 			return err
 		}
-
-		// GProtoCreateGroupResponse.Info [optional]
-		if err = buffer.ReadUInt8(&createGroupResponse.InfoFlag); err != nil {
+		createGroupResponse.Info = &GProtoGroupInfo{}
+		if err = buffer.ReadStruct(1, createGroupResponse.Info); err != nil {
 			return err
 		}
-		if createGroupResponse.InfoFlag == OPTIONAL_TRUE {
-			createGroupResponse.Info = &GProtoGroupInfo{}
-			if err = buffer.ReadStruct(1, createGroupResponse.Info); err != nil {
-				return err
-			}
-
-		}
-
 		return nil
 	}
-
 	return InvalidVersionError
 }
 
@@ -2962,27 +1280,13 @@ type GProtoGetGroupInfoRequest struct {
 
 func (getGroupInfoRequest *GProtoGetGroupInfoRequest) Encode(version uint16) ([]byte, error) {
 	if version == 1 {
-
-		/////////////
-		// Encode  //
-		/////////////
-
-		// New Buffer
 		buffer := NewEmptyGBuffer()
-
-		/////////////
-		// Encode  //
-		/////////////
 		var err error
-
-		// GProtoGetGroupInfoRequest.GroupId
 		if err = buffer.WriteString(getGroupInfoRequest.GroupId); err != nil {
 			return nil, err
 		}
-
 		return buffer.Bytes(), nil
 	}
-
 	return nil, InvalidVersionError
 }
 
@@ -2991,28 +1295,14 @@ func (getGroupInfoRequest *GProtoGetGroupInfoRequest) Decode(version uint16, buf
 	if len(buf) < 1 {
 		return InvalidDecodeBufferError
 	}
-
 	if version == 1 {
-		/////////////
-		// Decode  //
-		/////////////
-
-		// New Buffer
 		buffer := NewGBuffer(buf)
-
-		/////////////
-		// Decode  //
-		/////////////
 		var err error
-
-		// GProtoCreateGroupResponse.Code
 		if getGroupInfoRequest.GroupId, err = buffer.ReadString(); err != nil {
 			return err
 		}
-
 		return nil
 	}
-
 	return InvalidVersionError
 }
 
@@ -3023,48 +1313,22 @@ func (getGroupInfoRequest *GProtoGetGroupInfoRequest) Decode(version uint16, buf
 // }
 
 type GProtoGetGroupInfoResponse struct {
-	Code     uint8
-	Info     *GProtoGroupInfo // optional
-	InfoFlag uint8
+	Code uint8
+	Info *GProtoGroupInfo // optional
 }
 
 func (getGroupInfoResponse *GProtoGetGroupInfoResponse) Encode(version uint16) ([]byte, error) {
 	if version == 1 {
-
-		/////////////
-		// Encode  //
-		/////////////
-
-		// New Buffer
 		buffer := NewEmptyGBuffer()
-
-		/////////////
-		// Encode  //
-		/////////////
 		var err error
-
-		// GProtoGetGroupInfoResponse.Code
 		if err = buffer.WriteUInt8(getGroupInfoResponse.Code); err != nil {
 			return nil, err
 		}
-
-		// GProtoGetGroupInfoResponse.Info [optional]
-		if getGroupInfoResponse.InfoFlag == OPTIONAL_FALSE {
-			if err = buffer.WriteUInt8(OPTIONAL_FALSE); err != nil {
-				return nil, err
-			}
-		} else {
-			if err = buffer.WriteUInt8(OPTIONAL_TRUE); err != nil {
-				return nil, err
-			}
-			if err = buffer.WriteStruct(1, getGroupInfoResponse.Info); err != nil {
-				return nil, err
-			}
+		if err = buffer.WriteStruct(1, getGroupInfoResponse.Info); err != nil {
+			return nil, err
 		}
-
 		return buffer.Bytes(), nil
 	}
-
 	return nil, InvalidVersionError
 }
 
@@ -3073,81 +1337,44 @@ func (getGroupInfoResponse *GProtoGetGroupInfoResponse) Decode(version uint16, b
 	if len(buf) < 1 {
 		return InvalidDecodeBufferError
 	}
-
 	if version == 1 {
-		// New Buffer
 		buffer := NewGBuffer(buf)
-
-		/////////////
-		// Decode  //
-		/////////////
 		var err error
-
-		// GProtoGetGroupInfoResponse.Code
 		if err = buffer.ReadUInt8(&getGroupInfoResponse.Code); err != nil {
 			return err
 		}
-
-		// GProtoGetGroupInfoResponse.Info [optional]
-		if err = buffer.ReadUInt8(&getGroupInfoResponse.InfoFlag); err != nil {
+		getGroupInfoResponse.Info = &GProtoGroupInfo{}
+		if err = buffer.ReadStruct(1, getGroupInfoResponse.Info); err != nil {
 			return err
 		}
-		if getGroupInfoResponse.InfoFlag == OPTIONAL_TRUE {
-			getGroupInfoResponse.Info = &GProtoGroupInfo{}
-			if err = buffer.ReadStruct(1, getGroupInfoResponse.Info); err != nil {
-				return err
-			}
-
-		}
-
 		return nil
 	}
-
 	return InvalidVersionError
 }
 
 ////////////////////////////////////
 // message SetGroupInfoRequest {
-//     required string group_id = 1;
-//     optional string name = 2;
-//     optional string avatar = 3;
-//     optional string description = 4;
-//     optional string data = 5;
+//     optional string name = 1;
+//     optional string avatar = 2;
+//     optional string description = 3;
+//     optional uint16 max_user = 4;
 // }
 
 type GProtoSetGroupInfoRequest struct {
-	GroupId         string
 	Name            string // optional
 	NameFlag        uint8
 	Avatar          string // optional
 	AvatarFlag      uint8
 	Description     string // optional
 	DescriptionFlag uint8
-	Data            string // optional
-	DataFlag        uint8
+	MaxUser         uint16 // optional
+	MaxUserFlag     uint8
 }
 
 func (setGroupInfoRequest *GProtoSetGroupInfoRequest) Encode(version uint16) ([]byte, error) {
 	if version == 1 {
-
-		/////////////
-		// Encode  //
-		/////////////
-
-		// New Buffer
 		buffer := NewEmptyGBuffer()
-
-		/////////////
-		// Encode  //
-		/////////////
 		var err error
-
-		// GProtoSetGroupInfoRequest.GroupId
-		if err = buffer.WriteString(setGroupInfoRequest.GroupId); err != nil {
-			return nil, err
-		}
-
-		// GProtoSetGroupInfoRequest.Name [optional]
 		if setGroupInfoRequest.NameFlag == OPTIONAL_FALSE {
 			if err = buffer.WriteUInt8(OPTIONAL_FALSE); err != nil {
 				return nil, err
@@ -3160,8 +1387,6 @@ func (setGroupInfoRequest *GProtoSetGroupInfoRequest) Encode(version uint16) ([]
 				return nil, err
 			}
 		}
-
-		// GProtoSetGroupInfoRequest.Avatar [optional]
 		if setGroupInfoRequest.AvatarFlag == OPTIONAL_FALSE {
 			if err = buffer.WriteUInt8(OPTIONAL_FALSE); err != nil {
 				return nil, err
@@ -3174,8 +1399,6 @@ func (setGroupInfoRequest *GProtoSetGroupInfoRequest) Encode(version uint16) ([]
 				return nil, err
 			}
 		}
-
-		// GProtoSetGroupInfoRequest.Description [optional]
 		if setGroupInfoRequest.DescriptionFlag == OPTIONAL_FALSE {
 			if err = buffer.WriteUInt8(OPTIONAL_FALSE); err != nil {
 				return nil, err
@@ -3188,9 +1411,7 @@ func (setGroupInfoRequest *GProtoSetGroupInfoRequest) Encode(version uint16) ([]
 				return nil, err
 			}
 		}
-
-		// GProtoSetGroupInfoRequest.Data [optional]
-		if setGroupInfoRequest.DataFlag == OPTIONAL_FALSE {
+		if setGroupInfoRequest.MaxUserFlag == OPTIONAL_FALSE {
 			if err = buffer.WriteUInt8(OPTIONAL_FALSE); err != nil {
 				return nil, err
 			}
@@ -3198,11 +1419,10 @@ func (setGroupInfoRequest *GProtoSetGroupInfoRequest) Encode(version uint16) ([]
 			if err = buffer.WriteUInt8(OPTIONAL_TRUE); err != nil {
 				return nil, err
 			}
-			if err = buffer.WriteString(setGroupInfoRequest.Data); err != nil {
+			if err = buffer.WriteUInt16(setGroupInfoRequest.MaxUser); err != nil {
 				return nil, err
 			}
 		}
-
 		return buffer.Bytes(), nil
 	}
 
@@ -3214,22 +1434,9 @@ func (setGroupInfoRequest *GProtoSetGroupInfoRequest) Decode(version uint16, buf
 	if len(buf) < 1 {
 		return InvalidDecodeBufferError
 	}
-
 	if version == 1 {
-		// New Buffer
 		buffer := NewGBuffer(buf)
-
-		/////////////
-		// Decode  //
-		/////////////
 		var err error
-
-		// GProtoSetGroupInfoRequest.GroupId
-		if setGroupInfoRequest.GroupId, err = buffer.ReadString(); err != nil {
-			return err
-		}
-
-		// GProtoSetGroupInfoRequest.Name [optional]
 		if err = buffer.ReadUInt8(&setGroupInfoRequest.NameFlag); err != nil {
 			return err
 		}
@@ -3238,8 +1445,6 @@ func (setGroupInfoRequest *GProtoSetGroupInfoRequest) Decode(version uint16, buf
 				return err
 			}
 		}
-
-		// GProtoSetGroupInfoRequest.Avatar [optional]
 		if err = buffer.ReadUInt8(&setGroupInfoRequest.AvatarFlag); err != nil {
 			return err
 		}
@@ -3248,8 +1453,6 @@ func (setGroupInfoRequest *GProtoSetGroupInfoRequest) Decode(version uint16, buf
 				return err
 			}
 		}
-
-		// GProtoSetGroupInfoRequest.Description [optional]
 		if err = buffer.ReadUInt8(&setGroupInfoRequest.DescriptionFlag); err != nil {
 			return err
 		}
@@ -3260,18 +1463,16 @@ func (setGroupInfoRequest *GProtoSetGroupInfoRequest) Decode(version uint16, buf
 		}
 
 		// GProtoSetGroupInfoRequest.Data [optional]
-		if err = buffer.ReadUInt8(&setGroupInfoRequest.DataFlag); err != nil {
+		if err = buffer.ReadUInt8(&setGroupInfoRequest.MaxUserFlag); err != nil {
 			return err
 		}
-		if setGroupInfoRequest.DataFlag == OPTIONAL_TRUE {
-			if setGroupInfoRequest.Data, err = buffer.ReadString(); err != nil {
+		if setGroupInfoRequest.MaxUserFlag == OPTIONAL_TRUE {
+			if err = buffer.ReadUInt16(&setGroupInfoRequest.MaxUser); err != nil {
 				return err
 			}
 		}
-
 		return nil
 	}
-
 	return InvalidVersionError
 }
 
@@ -3282,48 +1483,22 @@ func (setGroupInfoRequest *GProtoSetGroupInfoRequest) Decode(version uint16, buf
 // }
 
 type GProtoSetGroupInfoResponse struct {
-	Code     uint8
-	Info     *GProtoGroupInfo // optional
-	InfoFlag uint8
+	Code uint8
+	Info *GProtoGroupInfo // optional
 }
 
 func (setGroupInfoResponse *GProtoSetGroupInfoResponse) Encode(version uint16) ([]byte, error) {
 	if version == 1 {
-
-		/////////////
-		// Encode  //
-		/////////////
-
-		// New Buffer
 		buffer := NewEmptyGBuffer()
-
-		/////////////
-		// Encode  //
-		/////////////
 		var err error
-
-		// GProtoSetGroupInfoResponse.Code
 		if err = buffer.WriteUInt8(setGroupInfoResponse.Code); err != nil {
 			return nil, err
 		}
-
-		// GProtoSetGroupInfoResponse.Info [optional]
-		if setGroupInfoResponse.InfoFlag == OPTIONAL_FALSE {
-			if err = buffer.WriteUInt8(OPTIONAL_FALSE); err != nil {
-				return nil, err
-			}
-		} else {
-			if err = buffer.WriteUInt8(OPTIONAL_TRUE); err != nil {
-				return nil, err
-			}
-			if err = buffer.WriteStruct(1, setGroupInfoResponse.Info); err != nil {
-				return nil, err
-			}
+		if err = buffer.WriteStruct(1, setGroupInfoResponse.Info); err != nil {
+			return nil, err
 		}
-
 		return buffer.Bytes(), nil
 	}
-
 	return nil, InvalidVersionError
 }
 
@@ -3332,37 +1507,18 @@ func (setGroupInfoResponse *GProtoSetGroupInfoResponse) Decode(version uint16, b
 	if len(buf) < 1 {
 		return InvalidDecodeBufferError
 	}
-
 	if version == 1 {
-
-		// New Buffer
 		buffer := NewGBuffer(buf)
-
-		/////////////
-		// Decode  //
-		/////////////
 		var err error
-
-		// GProtoSetGroupInfoResponse.Code
 		if err = buffer.ReadUInt8(&setGroupInfoResponse.Code); err != nil {
 			return err
 		}
-
-		// GProtoSetGroupInfoResponse.Info [optional]
-		if err = buffer.ReadUInt8(&setGroupInfoResponse.InfoFlag); err != nil {
+		setGroupInfoResponse.Info = &GProtoGroupInfo{}
+		if err = buffer.ReadStruct(1, setGroupInfoResponse.Info); err != nil {
 			return err
 		}
-		if setGroupInfoResponse.InfoFlag == OPTIONAL_TRUE {
-			setGroupInfoResponse.Info = &GProtoGroupInfo{}
-			if err = buffer.ReadStruct(1, setGroupInfoResponse.Info); err != nil {
-				return err
-			}
-
-		}
-
 		return nil
 	}
-
 	return InvalidVersionError
 }
 
@@ -3375,26 +1531,15 @@ type GProtoGetGroupListRequest struct {
 
 func (getGroupListRequest *GProtoGetGroupListRequest) Encode(version uint16) ([]byte, error) {
 	if version == 1 {
-		/////////////
-		// Encode  //
-		/////////////
-
 		return nil, nil
 	}
-
 	return nil, InvalidVersionError
 }
 
 func (getGroupListRequest *GProtoGetGroupListRequest) Decode(version uint16, buf []byte) error {
 	if version == 1 {
-
-		/////////////
-		// Decode  //
-		/////////////
-
 		return nil
 	}
-
 	return InvalidVersionError
 }
 
@@ -3411,25 +1556,11 @@ type GProtoGetGroupListResponse struct {
 
 func (getGroupListResponse *GProtoGetGroupListResponse) Encode(version uint16) ([]byte, error) {
 	if version == 1 {
-
-		/////////////
-		// Encode  //
-		/////////////
-
-		// New Buffer
 		buffer := NewEmptyGBuffer()
-
-		/////////////
-		// Encode  //
-		/////////////
 		var err error
-
-		// GProtoGetGroupListResponse.Code
 		if err = buffer.WriteUInt8(getGroupListResponse.Code); err != nil {
 			return nil, err
 		}
-
-		// GProtoGetGroupListResponse.GroupIds [array]
 		groupIdsNum := len(getGroupListResponse.GroupIds)
 		if err := buffer.WriteUInt16(uint16(groupIdsNum)); err != nil {
 			return nil, err
@@ -3439,10 +1570,8 @@ func (getGroupListResponse *GProtoGetGroupListResponse) Encode(version uint16) (
 				return nil, err
 			}
 		}
-
 		return buffer.Bytes(), nil
 	}
-
 	return nil, InvalidVersionError
 }
 
@@ -3451,23 +1580,12 @@ func (getGroupListResponse *GProtoGetGroupListResponse) Decode(version uint16, b
 	if len(buf) < 1 {
 		return InvalidDecodeBufferError
 	}
-
 	if version == 1 {
-
-		// New Buffer
 		buffer := NewGBuffer(buf)
-
-		/////////////
-		// Decode  //
-		/////////////
 		var err error
-
-		// GProtoGetGroupListResponse.Code
 		if err = buffer.ReadUInt8(&getGroupListResponse.Code); err != nil {
 			return err
 		}
-
-		// GProtoGetGroupListResponse.GroupIds [array]
 		var groupIdsNum uint16
 		if err = buffer.ReadUInt16(&groupIdsNum); err != nil {
 			return err
@@ -3479,18 +1597,16 @@ func (getGroupListResponse *GProtoGetGroupListResponse) Decode(version uint16, b
 				}
 			}
 		}
-
 		return nil
 	}
-
 	return InvalidVersionError
 }
 
 ////////////////////////////////////
 // message EnterGroupRequest {
 //     required string group_id = 1;
-//     required string invite_from = 2;
-//     repeated string invite_tos = 3;
+//     required string invite_from = 2;//邀请人
+//     repeated string invite_tos = 3;//被邀请人列表
 // }
 
 type GProtoEnterGroupRequest struct {
@@ -3501,30 +1617,14 @@ type GProtoEnterGroupRequest struct {
 
 func (enterGroupRequest *GProtoEnterGroupRequest) Encode(version uint16) ([]byte, error) {
 	if version == 1 {
-
-		/////////////
-		// Encode  //
-		/////////////
-
-		// New Buffer
 		buffer := NewEmptyGBuffer()
-
-		/////////////
-		// Encode  //
-		/////////////
 		var err error
-
-		// GProtoEnterGroupRequest.GroupId
 		if err = buffer.WriteString(enterGroupRequest.GroupId); err != nil {
 			return nil, err
 		}
-
-		// GProtoEnterGroupRequest.InviteFrom
 		if err = buffer.WriteString(enterGroupRequest.InviteFrom); err != nil {
 			return nil, err
 		}
-
-		// GProtoEnterGroupRequest.InviteTos [array]
 		inviteTosNum := len(enterGroupRequest.InviteTos)
 		if err := buffer.WriteUInt16(uint16(inviteTosNum)); err != nil {
 			return nil, err
@@ -3534,10 +1634,8 @@ func (enterGroupRequest *GProtoEnterGroupRequest) Encode(version uint16) ([]byte
 				return nil, err
 			}
 		}
-
 		return buffer.Bytes(), nil
 	}
-
 	return nil, InvalidVersionError
 }
 
@@ -3546,28 +1644,15 @@ func (enterGroupRequest *GProtoEnterGroupRequest) Decode(version uint16, buf []b
 	if len(buf) < 1 {
 		return InvalidDecodeBufferError
 	}
-
 	if version == 1 {
-
-		// New Buffer
 		buffer := NewGBuffer(buf)
-
-		/////////////
-		// Decode  //
-		/////////////
 		var err error
-
-		// GProtoEnterGroupRequest.GroupId
 		if enterGroupRequest.GroupId, err = buffer.ReadString(); err != nil {
 			return err
 		}
-
-		// GProtoEnterGroupRequest.InviteFrom
 		if enterGroupRequest.InviteFrom, err = buffer.ReadString(); err != nil {
 			return err
 		}
-
-		// GProtoEnterGroupRequest.InviteTos [array]
 		var inviteTosNum uint16
 		if err = buffer.ReadUInt16(&inviteTosNum); err != nil {
 			return err
@@ -3579,10 +1664,8 @@ func (enterGroupRequest *GProtoEnterGroupRequest) Decode(version uint16, buf []b
 				}
 			}
 		}
-
 		return nil
 	}
-
 	return InvalidVersionError
 }
 
@@ -3600,29 +1683,15 @@ type GProtoEnterGroupResponse struct {
 	InviteFromFlag uint8
 	InviteTos      []string
 	Info           *GProtoGroupInfo
-	InfoFlag       uint8
 }
 
 func (enterGroupResponse *GProtoEnterGroupResponse) Encode(version uint16) ([]byte, error) {
 	if version == 1 {
-		/////////////
-		// Encode  //
-		/////////////
-
-		// New Buffer
 		buffer := NewEmptyGBuffer()
-
-		/////////////
-		// Encode  //
-		/////////////
 		var err error
-
-		// GProtoEnterGroupResponse.Code
 		if err = buffer.WriteUInt8(enterGroupResponse.Code); err != nil {
 			return nil, err
 		}
-
-		// GProtoEnterGroupResponse.InviteFrom [optional]
 		if enterGroupResponse.InviteFromFlag == OPTIONAL_FALSE {
 			if err = buffer.WriteUInt8(OPTIONAL_FALSE); err != nil {
 				return nil, err
@@ -3635,8 +1704,6 @@ func (enterGroupResponse *GProtoEnterGroupResponse) Encode(version uint16) ([]by
 				return nil, err
 			}
 		}
-
-		// GProtoEnterGroupResponse.InviteTos [array]
 		inviteTosNum := len(enterGroupResponse.InviteTos)
 		if err := buffer.WriteUInt16(uint16(inviteTosNum)); err != nil {
 			return nil, err
@@ -3646,21 +1713,9 @@ func (enterGroupResponse *GProtoEnterGroupResponse) Encode(version uint16) ([]by
 				return nil, err
 			}
 		}
-
-		// GProtoEnterGroupResponse.Info [optional]
-		if enterGroupResponse.InfoFlag == OPTIONAL_FALSE {
-			if err = buffer.WriteUInt8(OPTIONAL_FALSE); err != nil {
-				return nil, err
-			}
-		} else {
-			if err = buffer.WriteUInt8(OPTIONAL_TRUE); err != nil {
-				return nil, err
-			}
-			if err = buffer.WriteStruct(1, enterGroupResponse.Info); err != nil {
-				return nil, err
-			}
+		if err = buffer.WriteStruct(1, enterGroupResponse.Info); err != nil {
+			return nil, err
 		}
-
 		return buffer.Bytes(), nil
 	}
 
@@ -3672,23 +1727,12 @@ func (enterGroupResponse *GProtoEnterGroupResponse) Decode(version uint16, buf [
 	if len(buf) < 1 {
 		return InvalidDecodeBufferError
 	}
-
 	if version == 1 {
-
-		// New Buffer
 		buffer := NewGBuffer(buf)
-
-		/////////////
-		// Decode  //
-		/////////////
 		var err error
-
-		// GProtoEnterGroupResponse.Code
 		if err = buffer.ReadUInt8(&enterGroupResponse.Code); err != nil {
 			return err
 		}
-
-		// GProtoEnterGroupResponse.InviteFrom [optional]
 		if err = buffer.ReadUInt8(&enterGroupResponse.InviteFromFlag); err != nil {
 			return err
 		}
@@ -3697,8 +1741,6 @@ func (enterGroupResponse *GProtoEnterGroupResponse) Decode(version uint16, buf [
 				return err
 			}
 		}
-
-		// GProtoEnterGroupResponse.InviteTos [array]
 		var inviteTosNum uint16
 		if err = buffer.ReadUInt16(&inviteTosNum); err != nil {
 			return err
@@ -3710,21 +1752,12 @@ func (enterGroupResponse *GProtoEnterGroupResponse) Decode(version uint16, buf [
 				}
 			}
 		}
-
-		// GProtoEnterGroupResponse.Info [optional]
-		if err = buffer.ReadUInt8(&enterGroupResponse.InfoFlag); err != nil {
+		enterGroupResponse.Info = &GProtoGroupInfo{}
+		if err = buffer.ReadStruct(1, enterGroupResponse.Info); err != nil {
 			return err
 		}
-		if enterGroupResponse.InfoFlag == OPTIONAL_TRUE {
-			enterGroupResponse.Info = &GProtoGroupInfo{}
-			if err = buffer.ReadStruct(1, enterGroupResponse.Info); err != nil {
-				return err
-			}
-		}
-
 		return nil
 	}
-
 	return InvalidVersionError
 }
 
@@ -3743,36 +1776,20 @@ type GProtoEnterGroupNotify struct {
 	InviteFrom *GProtoOtherUser
 	InviteTos  []*GProtoOtherUser
 	Info       *GProtoGroupInfo
-	InfoFlag   uint8
 	SendTime   uint64
 	IsOffline  uint8
 }
 
 func (enterGroupNotify *GProtoEnterGroupNotify) Encode(version uint16) ([]byte, error) {
 	if version == 1 {
-		/////////////
-		// Encode  //
-		/////////////
-
-		// New Buffer
 		buffer := NewEmptyGBuffer()
-
-		/////////////
-		// Encode  //
-		/////////////
 		var err error
-
-		// GProtoEnterGroupNotify.GroupId
 		if err = buffer.WriteString(enterGroupNotify.GroupId); err != nil {
 			return nil, err
 		}
-
-		// GProtoEnterGroupNotify.InviteFrom
 		if err = buffer.WriteStruct(1, enterGroupNotify.InviteFrom); err != nil {
 			return nil, err
 		}
-
-		// GProtoEnterGroupNotify.InviteTos [array]
 		inviteTosNum := len(enterGroupNotify.InviteTos)
 		if err := buffer.WriteUInt16(uint16(inviteTosNum)); err != nil {
 			return nil, err
@@ -3782,34 +1799,17 @@ func (enterGroupNotify *GProtoEnterGroupNotify) Encode(version uint16) ([]byte, 
 				return nil, err
 			}
 		}
-
-		// GProtoEnterGroupNotify.Info [optional]
-		if enterGroupNotify.InfoFlag == OPTIONAL_FALSE {
-			if err = buffer.WriteUInt8(OPTIONAL_FALSE); err != nil {
-				return nil, err
-			}
-		} else {
-			if err = buffer.WriteUInt8(OPTIONAL_TRUE); err != nil {
-				return nil, err
-			}
-			if err = buffer.WriteStruct(1, enterGroupNotify.Info); err != nil {
-				return nil, err
-			}
+		if err = buffer.WriteStruct(1, enterGroupNotify.Info); err != nil {
+			return nil, err
 		}
-
-		// GProtoEnterGroupNotify.SendTime
 		if err = buffer.WriteUInt64(enterGroupNotify.SendTime); err != nil {
 			return nil, err
 		}
-
-		// GProtoEnterGroupNotify.IsOffline
 		if err = buffer.WriteUInt8(enterGroupNotify.IsOffline); err != nil {
 			return nil, err
 		}
-
 		return buffer.Bytes(), nil
 	}
-
 	return nil, InvalidVersionError
 }
 
@@ -3818,29 +1818,16 @@ func (enterGroupNotify *GProtoEnterGroupNotify) Decode(version uint16, buf []byt
 	if len(buf) < 1 {
 		return InvalidDecodeBufferError
 	}
-
 	if version == 1 {
-
-		// New Buffer
 		buffer := NewGBuffer(buf)
-
-		/////////////
-		// Decode  //
-		/////////////
 		var err error
-
-		// GProtoEnterGroupNotify.GroupId
 		if enterGroupNotify.GroupId, err = buffer.ReadString(); err != nil {
 			return err
 		}
-
-		// GProtoEnterGroupNotify.InviteFrom
 		enterGroupNotify.InviteFrom = &GProtoOtherUser{}
 		if err = buffer.ReadStruct(1, enterGroupNotify.InviteFrom); err != nil {
 			return err
 		}
-
-		// GProtoEnterGroupNotify.InviteTos [array]
 		var inviteTosNum uint16
 		if err = buffer.ReadUInt16(&inviteTosNum); err != nil {
 			return err
@@ -3853,31 +1840,18 @@ func (enterGroupNotify *GProtoEnterGroupNotify) Decode(version uint16, buf []byt
 				}
 			}
 		}
-
-		// GProtoEnterGroupNotify.Info [optional]
-		if err = buffer.ReadUInt8(&enterGroupNotify.InfoFlag); err != nil {
+		enterGroupNotify.Info = &GProtoGroupInfo{}
+		if err = buffer.ReadStruct(1, enterGroupNotify.Info); err != nil {
 			return err
 		}
-		if enterGroupNotify.InfoFlag == OPTIONAL_TRUE {
-			enterGroupNotify.Info = &GProtoGroupInfo{}
-			if err = buffer.ReadStruct(1, enterGroupNotify.Info); err != nil {
-				return err
-			}
-		}
-
-		// GProtoEnterGroupNotify.SendTime
 		if err = buffer.ReadUInt64(&enterGroupNotify.SendTime); err != nil {
 			return err
 		}
-
-		// GProtoEnterGroupNotify.IsOffline
 		if err = buffer.ReadUInt8(&enterGroupNotify.IsOffline); err != nil {
 			return err
 		}
-
 		return nil
 	}
-
 	return InvalidVersionError
 }
 
@@ -3896,30 +1870,14 @@ type GProtoLeaveGroupRequest struct {
 
 func (leaveGroupRequest *GProtoLeaveGroupRequest) Encode(version uint16) ([]byte, error) {
 	if version == 1 {
-
-		/////////////
-		// Encode  //
-		/////////////
-
-		// New Buffer
 		buffer := NewEmptyGBuffer()
-
-		/////////////
-		// Encode  //
-		/////////////
 		var err error
-
-		// GProtoLeaveGroupRequest.GroupId
 		if err = buffer.WriteString(leaveGroupRequest.GroupId); err != nil {
 			return nil, err
 		}
-
-		// GProtoLeaveGroupRequest.LeaveFrom
 		if err = buffer.WriteString(leaveGroupRequest.LeaveFrom); err != nil {
 			return nil, err
 		}
-
-		// GProtoLeaveGroupRequest.LeaveTos [array]
 		leaveTosNum := len(leaveGroupRequest.LeaveTos)
 		if err := buffer.WriteUInt16(uint16(leaveTosNum)); err != nil {
 			return nil, err
@@ -3929,10 +1887,8 @@ func (leaveGroupRequest *GProtoLeaveGroupRequest) Encode(version uint16) ([]byte
 				return nil, err
 			}
 		}
-
 		return buffer.Bytes(), nil
 	}
-
 	return nil, InvalidVersionError
 }
 
@@ -3941,28 +1897,15 @@ func (leaveGroupRequest *GProtoLeaveGroupRequest) Decode(version uint16, buf []b
 	if len(buf) < 1 {
 		return InvalidDecodeBufferError
 	}
-
 	if version == 1 {
-
-		// New Buffer
 		buffer := NewGBuffer(buf)
-
-		/////////////
-		// Decode  //
-		/////////////
 		var err error
-
-		// GProtoLeaveGroupRequest.GroupId
 		if leaveGroupRequest.GroupId, err = buffer.ReadString(); err != nil {
 			return err
 		}
-
-		// GProtoLeaveGroupRequest.LeaveFrom
 		if leaveGroupRequest.LeaveFrom, err = buffer.ReadString(); err != nil {
 			return err
 		}
-
-		// GProtoLeaveGroupRequest.LeaveTos [array]
 		var leaveTosNum uint16
 		if err = buffer.ReadUInt16(&leaveTosNum); err != nil {
 			return err
@@ -3974,10 +1917,8 @@ func (leaveGroupRequest *GProtoLeaveGroupRequest) Decode(version uint16, buf []b
 				}
 			}
 		}
-
 		return nil
 	}
-
 	return InvalidVersionError
 }
 
@@ -3995,30 +1936,15 @@ type GProtoLeaveGroupResponse struct {
 	LeaveFromFlag uint8
 	LeaveTos      []string
 	GroupId       string
-	GroupIdFlag   uint8
 }
 
 func (leaveGroupResponse *GProtoLeaveGroupResponse) Encode(version uint16) ([]byte, error) {
 	if version == 1 {
-
-		/////////////
-		// Encode  //
-		/////////////
-
-		// New Buffer
 		buffer := NewEmptyGBuffer()
-
-		/////////////
-		// Encode  //
-		/////////////
 		var err error
-
-		// GProtoLeaveGroupResponse.Code
 		if err = buffer.WriteUInt8(leaveGroupResponse.Code); err != nil {
 			return nil, err
 		}
-
-		// GProtoLeaveGroupResponse.LeaveFrom [optional]
 		if leaveGroupResponse.LeaveFromFlag == OPTIONAL_FALSE {
 			if err = buffer.WriteUInt8(OPTIONAL_FALSE); err != nil {
 				return nil, err
@@ -4031,8 +1957,6 @@ func (leaveGroupResponse *GProtoLeaveGroupResponse) Encode(version uint16) ([]by
 				return nil, err
 			}
 		}
-
-		// GProtoLeaveGroupResponse.LeaveTos [array]
 		leaveTosNum := len(leaveGroupResponse.LeaveTos)
 		if err := buffer.WriteUInt16(uint16(leaveTosNum)); err != nil {
 			return nil, err
@@ -4042,24 +1966,11 @@ func (leaveGroupResponse *GProtoLeaveGroupResponse) Encode(version uint16) ([]by
 				return nil, err
 			}
 		}
-
-		// GProtoLeaveGroupResponse.GroupId [optional]
-		if leaveGroupResponse.GroupIdFlag == OPTIONAL_FALSE {
-			if err = buffer.WriteUInt8(OPTIONAL_FALSE); err != nil {
-				return nil, err
-			}
-		} else {
-			if err = buffer.WriteUInt8(OPTIONAL_TRUE); err != nil {
-				return nil, err
-			}
-			if err = buffer.WriteString(leaveGroupResponse.GroupId); err != nil {
-				return nil, err
-			}
+		if err = buffer.WriteString(leaveGroupResponse.GroupId); err != nil {
+			return nil, err
 		}
-
 		return buffer.Bytes(), nil
 	}
-
 	return nil, InvalidVersionError
 }
 
@@ -4068,23 +1979,12 @@ func (leaveGroupResponse *GProtoLeaveGroupResponse) Decode(version uint16, buf [
 	if len(buf) < 1 {
 		return InvalidDecodeBufferError
 	}
-
 	if version == 1 {
-
-		// New Buffer
 		buffer := NewGBuffer(buf)
-
-		/////////////
-		// Decode  //
-		/////////////
 		var err error
-
-		// GProtoLeaveGroupResponse.Code
 		if err = buffer.ReadUInt8(&leaveGroupResponse.Code); err != nil {
 			return err
 		}
-
-		// GProtoLeaveGroupResponse.LeaveFrom [optional]
 		if err = buffer.ReadUInt8(&leaveGroupResponse.LeaveFromFlag); err != nil {
 			return err
 		}
@@ -4093,8 +1993,6 @@ func (leaveGroupResponse *GProtoLeaveGroupResponse) Decode(version uint16, buf [
 				return err
 			}
 		}
-
-		// GProtoLeaveGroupResponse.LeaveTos [array]
 		var leaveTosNum uint16
 		if err = buffer.ReadUInt16(&leaveTosNum); err != nil {
 			return err
@@ -4106,20 +2004,11 @@ func (leaveGroupResponse *GProtoLeaveGroupResponse) Decode(version uint16, buf [
 				}
 			}
 		}
-
-		// GProtoLeaveGroupResponse.GroupId [optional]
-		if err = buffer.ReadUInt8(&leaveGroupResponse.GroupIdFlag); err != nil {
+		if leaveGroupResponse.GroupId, err = buffer.ReadString(); err != nil {
 			return err
 		}
-		if leaveGroupResponse.GroupIdFlag == OPTIONAL_TRUE {
-			if leaveGroupResponse.GroupId, err = buffer.ReadString(); err != nil {
-				return err
-			}
-		}
-
 		return nil
 	}
-
 	return InvalidVersionError
 }
 
@@ -4142,29 +2031,14 @@ type GProtoLeaveGroupNotify struct {
 
 func (leaveGroupNotify *GProtoLeaveGroupNotify) Encode(version uint16) ([]byte, error) {
 	if version == 1 {
-		/////////////
-		// Encode  //
-		/////////////
-
-		// New Buffer
 		buffer := NewEmptyGBuffer()
-
-		/////////////
-		// Encode  //
-		/////////////
 		var err error
-
-		// GProtoLeaveGroupNotify.GroupId
 		if err = buffer.WriteString(leaveGroupNotify.GroupId); err != nil {
 			return nil, err
 		}
-
-		// GProtoLeaveGroupNotify.LeaveFrom
 		if err = buffer.WriteString(leaveGroupNotify.LeaveFrom); err != nil {
 			return nil, err
 		}
-
-		// GProtoLeaveGroupNotify.LeaveTos [array]
 		leaveTosNum := len(leaveGroupNotify.LeaveTos)
 		if err := buffer.WriteUInt16(uint16(leaveTosNum)); err != nil {
 			return nil, err
@@ -4174,20 +2048,14 @@ func (leaveGroupNotify *GProtoLeaveGroupNotify) Encode(version uint16) ([]byte, 
 				return nil, err
 			}
 		}
-
-		// GProtoLeaveGroupNotify.SendTime
 		if err = buffer.WriteUInt64(leaveGroupNotify.SendTime); err != nil {
 			return nil, err
 		}
-
-		// GProtoLeaveGroupNotify.IsOffline
 		if err = buffer.WriteUInt8(leaveGroupNotify.IsOffline); err != nil {
 			return nil, err
 		}
-
 		return buffer.Bytes(), nil
 	}
-
 	return nil, InvalidVersionError
 }
 
@@ -4196,28 +2064,15 @@ func (leaveGroupNotify *GProtoLeaveGroupNotify) Decode(version uint16, buf []byt
 	if len(buf) < 1 {
 		return InvalidDecodeBufferError
 	}
-
 	if version == 1 {
-
-		// New Buffer
 		buffer := NewGBuffer(buf)
-
-		/////////////
-		// Decode  //
-		/////////////
 		var err error
-
-		// GProtoLeaveGroupNotify.GroupId
 		if leaveGroupNotify.GroupId, err = buffer.ReadString(); err != nil {
 			return err
 		}
-
-		// GProtoLeaveGroupNotify.LeaveFrom
 		if leaveGroupNotify.LeaveFrom, err = buffer.ReadString(); err != nil {
 			return err
 		}
-
-		// GProtoLeaveGroupNotify.LeaveTos [array]
 		var leaveTosNum uint16
 		if err = buffer.ReadUInt16(&leaveTosNum); err != nil {
 			return err
@@ -4229,20 +2084,14 @@ func (leaveGroupNotify *GProtoLeaveGroupNotify) Decode(version uint16, buf []byt
 				}
 			}
 		}
-
-		// GProtoLeaveGroupNotify.SendTime
 		if err = buffer.ReadUInt64(&leaveGroupNotify.SendTime); err != nil {
 			return err
 		}
-
-		// GProtoLeaveGroupNotify.IsOffline
 		if err = buffer.ReadUInt8(&leaveGroupNotify.IsOffline); err != nil {
 			return err
 		}
-
 		return nil
 	}
-
 	return InvalidVersionError
 }
 
@@ -4263,42 +2112,22 @@ type GProtoGroupKickoffNotify struct {
 
 func (groupKickoffNotify *GProtoGroupKickoffNotify) Encode(version uint16) ([]byte, error) {
 	if version == 1 {
-
-		/////////////
-		// Encode  //
-		/////////////
-
-		// New Buffer
 		buffer := NewEmptyGBuffer()
-
-		/////////////
-		// Encode  //
-		/////////////
 		var err error
-
-		// GProtoGroupKickoffNotify.GroupId
 		if err = buffer.WriteString(groupKickoffNotify.GroupId); err != nil {
 			return nil, err
 		}
-
-		// GProtoGroupKickoffNotify.Account
 		if err = buffer.WriteString(groupKickoffNotify.Account); err != nil {
 			return nil, err
 		}
-
-		// GProtoGroupKickoffNotify.SendTime
 		if err = buffer.WriteUInt64(groupKickoffNotify.SendTime); err != nil {
 			return nil, err
 		}
-
-		// GProtoGroupKickoffNotify.IsOffline
 		if err = buffer.WriteUInt8(groupKickoffNotify.IsOffline); err != nil {
 			return nil, err
 		}
-
 		return buffer.Bytes(), nil
 	}
-
 	return nil, InvalidVersionError
 }
 
@@ -4307,40 +2136,23 @@ func (groupKickoffNotify *GProtoGroupKickoffNotify) Decode(version uint16, buf [
 	if len(buf) < 1 {
 		return InvalidDecodeBufferError
 	}
-
 	if version == 1 {
-
-		// New Buffer
 		buffer := NewGBuffer(buf)
-
-		/////////////
-		// Decode  //
-		/////////////
 		var err error
-
-		// GProtoGroupKickoffNotify.GroupId
 		if groupKickoffNotify.GroupId, err = buffer.ReadString(); err != nil {
 			return err
 		}
-
-		// GProtoGroupKickoffNotify.Account
 		if groupKickoffNotify.Account, err = buffer.ReadString(); err != nil {
 			return err
 		}
-
-		// GProtoGroupKickoffNotify.SendTime
 		if err = buffer.ReadUInt64(&groupKickoffNotify.SendTime); err != nil {
 			return err
 		}
-
-		// GProtoGroupKickoffNotify.IsOffline
 		if err = buffer.ReadUInt8(&groupKickoffNotify.IsOffline); err != nil {
 			return err
 		}
-
 		return nil
 	}
-
 	return InvalidVersionError
 }
 
@@ -4357,27 +2169,16 @@ type GProtoSetGroupMarknameRequest struct {
 
 func (setGroupMarknameRequest *GProtoSetGroupMarknameRequest) Encode(version uint16) ([]byte, error) {
 	if version == 1 {
-		// New Buffer
 		buffer := NewEmptyGBuffer()
-
-		/////////////
-		// Encode  //
-		/////////////
 		var err error
-
-		// GProtoSetGroupMarknameRequest.GroupId
 		if err = buffer.WriteString(setGroupMarknameRequest.GroupId); err != nil {
 			return nil, err
 		}
-
-		// GProtoSetGroupMarknameRequest.Markname
 		if err = buffer.WriteString(setGroupMarknameRequest.Markname); err != nil {
 			return nil, err
 		}
-
 		return buffer.Bytes(), nil
 	}
-
 	return nil, InvalidVersionError
 }
 
@@ -4388,100 +2189,16 @@ func (setGroupMarknameRequest *GProtoSetGroupMarknameRequest) Decode(version uin
 	}
 
 	if version == 1 {
-		// New Buffer
 		buffer := NewGBuffer(buf)
-
-		/////////////
-		// Decode  //
-		/////////////
 		var err error
-
-		// GProtoSetGroupMarknameRequest.GroupId
 		if setGroupMarknameRequest.GroupId, err = buffer.ReadString(); err != nil {
 			return err
 		}
-
-		// GProtoSetGroupMarknameRequest.Markname
 		if setGroupMarknameRequest.Markname, err = buffer.ReadString(); err != nil {
 			return err
 		}
-
 		return nil
 	}
-
-	return InvalidVersionError
-}
-
-type GProtoSetGroupMarknameResponse struct {
-	Code     uint8
-	GroupId  string
-	Markname string
-}
-
-func (setGroupMarknameResponse *GProtoSetGroupMarknameResponse) Encode(version uint16) ([]byte, error) {
-	if version == 1 {
-		// New Buffer
-		buffer := NewEmptyGBuffer()
-
-		/////////////
-		// Encode  //
-		/////////////
-		var err error
-
-		// GProtoSetGroupMarknameResponse.Code
-		if err = buffer.WriteUInt8(setGroupMarknameResponse.Code); err != nil {
-			return nil, err
-		}
-
-		// GProtoSetGroupMarknameResponse.GroupId
-		if err = buffer.WriteString(setGroupMarknameResponse.GroupId); err != nil {
-			return nil, err
-		}
-
-		// GProtoSetGroupMarknameResponse.Markname
-		if err = buffer.WriteString(setGroupMarknameResponse.Markname); err != nil {
-			return nil, err
-		}
-
-		return buffer.Bytes(), nil
-	}
-
-	return nil, InvalidVersionError
-}
-
-func (setGroupMarknameResponse *GProtoSetGroupMarknameResponse) Decode(version uint16, buf []byte) error {
-	// 合法性判断
-	if len(buf) < 3 {
-		return InvalidDecodeBufferError
-	}
-
-	if version == 1 {
-		// New Buffer
-		buffer := NewGBuffer(buf)
-
-		/////////////
-		// Decode  //
-		/////////////
-		var err error
-
-		// GProtoSetGroupMarknameResponse.Code
-		if err = buffer.ReadUInt8(&setGroupMarknameResponse.Code); err != nil {
-			return err
-		}
-
-		// GProtoSetGroupMarknameResponse.GroupId
-		if setGroupMarknameResponse.GroupId, err = buffer.ReadString(); err != nil {
-			return err
-		}
-
-		// GProtoSetGroupMarknameResponse.Markname
-		if setGroupMarknameResponse.Markname, err = buffer.ReadString(); err != nil {
-			return err
-		}
-
-		return nil
-	}
-
 	return InvalidVersionError
 }
 
@@ -4492,578 +2209,48 @@ func (setGroupMarknameResponse *GProtoSetGroupMarknameResponse) Decode(version u
 //     required string markname = 3;
 // }
 
-////////////////////////////////////
-// message AddBlacklistRequest {
-//     required string account = 1;
-// }
-
-type GProtoAddBlacklistRequest struct {
-	Account string
+type GProtoSetGroupMarknameResponse struct {
+	Code     uint8
+	GroupId  string
+	Markname string
 }
 
-func (addBlacklistRequest *GProtoAddBlacklistRequest) Encode(version uint16) ([]byte, error) {
+func (setGroupMarknameResponse *GProtoSetGroupMarknameResponse) Encode(version uint16) ([]byte, error) {
 	if version == 1 {
-		// New Buffer
 		buffer := NewEmptyGBuffer()
-
-		/////////////
-		// Encode  //
-		/////////////
 		var err error
-
-		// GProtoAddBlacklistRequest.Account
-		if err = buffer.WriteString(addBlacklistRequest.Account); err != nil {
+		if err = buffer.WriteUInt8(setGroupMarknameResponse.Code); err != nil {
 			return nil, err
 		}
-
+		if err = buffer.WriteString(setGroupMarknameResponse.GroupId); err != nil {
+			return nil, err
+		}
+		if err = buffer.WriteString(setGroupMarknameResponse.Markname); err != nil {
+			return nil, err
+		}
 		return buffer.Bytes(), nil
 	}
-
 	return nil, InvalidVersionError
 }
 
-func (addBlacklistRequest *GProtoAddBlacklistRequest) Decode(version uint16, buf []byte) error {
+func (setGroupMarknameResponse *GProtoSetGroupMarknameResponse) Decode(version uint16, buf []byte) error {
 	// 合法性判断
 	if len(buf) < 3 {
 		return InvalidDecodeBufferError
 	}
 
 	if version == 1 {
-		// New Buffer
 		buffer := NewGBuffer(buf)
-
-		/////////////
-		// Decode  //
-		/////////////
 		var err error
-
-		// GProtoAddBlacklistRequest.Account
-		if addBlacklistRequest.Account, err = buffer.ReadString(); err != nil {
+		if err = buffer.ReadUInt8(&setGroupMarknameResponse.Code); err != nil {
 			return err
 		}
-
-		return nil
-	}
-
-	return InvalidVersionError
-}
-
-////////////////////////////////////
-// message AddBlacklistResponse {
-//     required uint8 code = 1;
-//     required string account = 2;
-//     required uint8 flag = 3;
-// }
-
-type GProtoAddBlacklistResponse struct {
-	Code    uint8
-	Account string
-	Flag    uint8
-}
-
-func (addBlacklistResponse *GProtoAddBlacklistResponse) Encode(version uint16) ([]byte, error) {
-	if version == 1 {
-		// New Buffer
-		buffer := NewEmptyGBuffer()
-
-		/////////////
-		// Encode  //
-		/////////////
-		var err error
-
-		// GProtoAddBlacklistResponse.Code
-		if err = buffer.WriteUInt8(addBlacklistResponse.Code); err != nil {
-			return nil, err
-		}
-
-		// GProtoAddBlacklistResponse.Account
-		if err = buffer.WriteString(addBlacklistResponse.Account); err != nil {
-			return nil, err
-		}
-
-		// GProtoAddBlacklistResponse.Flag
-		if err = buffer.WriteUInt8(addBlacklistResponse.Flag); err != nil {
-			return nil, err
-		}
-
-		return buffer.Bytes(), nil
-	}
-
-	return nil, InvalidVersionError
-}
-
-func (addBlacklistResponse *GProtoAddBlacklistResponse) Decode(version uint16, buf []byte) error {
-	// 合法性判断
-	if len(buf) < 3 {
-		return InvalidDecodeBufferError
-	}
-
-	if version == 1 {
-		// New Buffer
-		buffer := NewGBuffer(buf)
-
-		/////////////
-		// Decode  //
-		/////////////
-		var err error
-
-		// GProtoAddBlacklistResponse.Code
-		if err = buffer.ReadUInt8(&addBlacklistResponse.Code); err != nil {
+		if setGroupMarknameResponse.GroupId, err = buffer.ReadString(); err != nil {
 			return err
 		}
-
-		// GProtoAddBlacklistResponse.Account
-		if addBlacklistResponse.Account, err = buffer.ReadString(); err != nil {
+		if setGroupMarknameResponse.Markname, err = buffer.ReadString(); err != nil {
 			return err
 		}
-
-		// GProtoAddBlacklistResponse.Flag
-		if err = buffer.ReadUInt8(&addBlacklistResponse.Flag); err != nil {
-			return err
-		}
-
-		return nil
-	}
-
-	return InvalidVersionError
-}
-
-////////////////////////////////////
-// message AddBlacklistNotify {
-//     required OtherUser user = 1;
-//     required uint8 flag = 2;
-//     required uint64 send_time = 3;
-//     required uint8 is_offline = 4;
-// }
-
-type GProtoAddBlacklistNotify struct {
-	User      *GProtoOtherUser
-	Flag      uint8
-	SendTime  uint64
-	IsOffline uint8
-}
-
-func (addBlacklistNotify *GProtoAddBlacklistNotify) Encode(version uint16) ([]byte, error) {
-	if version == 1 {
-		// New Buffer
-		buffer := NewEmptyGBuffer()
-
-		/////////////
-		// Encode  //
-		/////////////
-		var err error
-
-		// GProtoAddBlacklistNotify.User
-		if err = buffer.WriteStruct(1, addBlacklistNotify.User); err != nil {
-			return nil, err
-		}
-
-		// GProtoAddBlacklistNotify.Flag
-		if err = buffer.WriteUInt8(addBlacklistNotify.Flag); err != nil {
-			return nil, err
-		}
-
-		// GProtoAddBlacklistNotify.SendTime
-		if err = buffer.WriteUInt64(addBlacklistNotify.SendTime); err != nil {
-			return nil, err
-		}
-
-		// GProtoAddBlacklistNotify.IsOffline
-		if err = buffer.WriteUInt8(addBlacklistNotify.IsOffline); err != nil {
-			return nil, err
-		}
-
-		return buffer.Bytes(), nil
-	}
-
-	return nil, InvalidVersionError
-}
-
-func (addBlacklistNotify *GProtoAddBlacklistNotify) Decode(version uint16, buf []byte) error {
-	// 合法性判断
-	if len(buf) < 3 {
-		return InvalidDecodeBufferError
-	}
-
-	if version == 1 {
-		// New Buffer
-		buffer := NewGBuffer(buf)
-
-		/////////////
-		// Decode  //
-		/////////////
-		var err error
-
-		// GProtoAddBlacklistNotify.User
-		addBlacklistNotify.User = &GProtoOtherUser{}
-		if err = buffer.ReadStruct(1, addBlacklistNotify.User); err != nil {
-			return err
-		}
-
-		// GProtoAddBlacklistNotify.Flag
-		if err = buffer.ReadUInt8(&addBlacklistNotify.Flag); err != nil {
-			return err
-		}
-
-		// GProtoAddBlacklistNotify.SendTime
-		if err = buffer.ReadUInt64(&addBlacklistNotify.SendTime); err != nil {
-			return err
-		}
-
-		// GProtoAddBlacklistNotify.IsOffline
-		if err = buffer.ReadUInt8(&addBlacklistNotify.IsOffline); err != nil {
-			return err
-		}
-
-		return nil
-	}
-
-	return InvalidVersionError
-}
-
-////////////////////////////////////
-// message DelBlacklistRequest {
-//     required string account = 1;
-// 	   required uint8 ops = 2;
-// }
-
-type GProtoDelBlacklistRequest struct {
-	Account string
-}
-
-func (delBlacklistRequest *GProtoDelBlacklistRequest) Encode(version uint16) ([]byte, error) {
-	if version == 1 {
-		// New Buffer
-		buffer := NewEmptyGBuffer()
-
-		/////////////
-		// Encode  //
-		/////////////
-		var err error
-
-		// GProtoDelBlacklistRequest.Account
-		if err = buffer.WriteString(delBlacklistRequest.Account); err != nil {
-			return nil, err
-		}
-
-		return buffer.Bytes(), nil
-	}
-
-	return nil, InvalidVersionError
-}
-
-func (delBlacklistRequest *GProtoDelBlacklistRequest) Decode(version uint16, buf []byte) error {
-	// 合法性判断
-	if len(buf) < 3 {
-		return InvalidDecodeBufferError
-	}
-
-	if version == 1 {
-		// New Buffer
-		buffer := NewGBuffer(buf)
-
-		/////////////
-		// Decode  //
-		/////////////
-		var err error
-
-		// GProtoDelBlacklistRequest.Account
-		if delBlacklistRequest.Account, err = buffer.ReadString(); err != nil {
-			return err
-		}
-
-		return nil
-	}
-
-	return InvalidVersionError
-}
-
-////////////////////////////////////
-// message DelBlacklistResponse {
-//     required uint8 code = 1;
-//     required string account = 2;
-//     required uint8 flag = 3;
-// }
-
-type GProtoDelBlacklistResponse struct {
-	Code    uint8
-	Account string
-	Flag    uint8
-}
-
-func (delBlacklistResponse *GProtoDelBlacklistResponse) Encode(version uint16) ([]byte, error) {
-	if version == 1 {
-		// New Buffer
-		buffer := NewEmptyGBuffer()
-
-		/////////////
-		// Encode  //
-		/////////////
-		var err error
-
-		// GProtoDelBlacklistResponse.Code
-		if err = buffer.WriteUInt8(delBlacklistResponse.Code); err != nil {
-			return nil, err
-		}
-
-		// GProtoDelBlacklistResponse.Account
-		if err = buffer.WriteString(delBlacklistResponse.Account); err != nil {
-			return nil, err
-		}
-
-		// GProtoDelBlacklistResponse.Flag
-		if err = buffer.WriteUInt8(delBlacklistResponse.Flag); err != nil {
-			return nil, err
-		}
-
-		return buffer.Bytes(), nil
-	}
-
-	return nil, InvalidVersionError
-}
-
-func (delBlacklistResponse *GProtoDelBlacklistResponse) Decode(version uint16, buf []byte) error {
-	// 合法性判断
-	if len(buf) < 3 {
-		return InvalidDecodeBufferError
-	}
-
-	if version == 1 {
-		// New Buffer
-		buffer := NewGBuffer(buf)
-
-		/////////////
-		// Decode  //
-		/////////////
-		var err error
-
-		// GProtoDelBlacklistResponse.Code
-		if err = buffer.ReadUInt8(&delBlacklistResponse.Code); err != nil {
-			return err
-		}
-
-		// GProtoDelBlacklistResponse.Account
-		if delBlacklistResponse.Account, err = buffer.ReadString(); err != nil {
-			return err
-		}
-
-		// GProtoDelBlacklistResponse.Flag
-		if err = buffer.ReadUInt8(&delBlacklistResponse.Flag); err != nil {
-			return err
-		}
-
-		return nil
-	}
-
-	return InvalidVersionError
-}
-
-////////////////////////////////////
-// message DelBlacklistNotify {
-//     required OtherUser user = 1;
-//     required uint8 flag = 2;
-//     required uint64 send_time = 3;
-//     required uint8 is_offline = 4;
-// }
-
-type GProtoDelBlacklistNotify struct {
-	User      *GProtoOtherUser
-	Flag      uint8
-	SendTime  uint64
-	IsOffline uint8
-}
-
-func (elBlacklistNotify *GProtoDelBlacklistNotify) Encode(version uint16) ([]byte, error) {
-	if version == 1 {
-		// New Buffer
-		buffer := NewEmptyGBuffer()
-
-		/////////////
-		// Encode  //
-		/////////////
-		var err error
-
-		// GProtoDelBlacklistNotify.User
-		if err = buffer.WriteStruct(1, elBlacklistNotify.User); err != nil {
-			return nil, err
-		}
-
-		// GProtoDelBlacklistNotify.Flag
-		if err = buffer.WriteUInt8(elBlacklistNotify.Flag); err != nil {
-			return nil, err
-		}
-
-		// GProtoDelBlacklistNotify.SendTime
-		if err = buffer.WriteUInt64(elBlacklistNotify.SendTime); err != nil {
-			return nil, err
-		}
-
-		// GProtoDelBlacklistNotify.IsOffline
-		if err = buffer.WriteUInt8(elBlacklistNotify.IsOffline); err != nil {
-			return nil, err
-		}
-
-		return buffer.Bytes(), nil
-	}
-
-	return nil, InvalidVersionError
-}
-
-func (elBlacklistNotify *GProtoDelBlacklistNotify) Decode(version uint16, buf []byte) error {
-	// 合法性判断
-	if len(buf) < 3 {
-		return InvalidDecodeBufferError
-	}
-
-	if version == 1 {
-		// New Buffer
-		buffer := NewGBuffer(buf)
-
-		/////////////
-		// Decode  //
-		/////////////
-		var err error
-
-		// GProtoDelBlacklistNotify.User
-		elBlacklistNotify.User = &GProtoOtherUser{}
-		if err = buffer.ReadStruct(1, elBlacklistNotify.User); err != nil {
-			return err
-		}
-
-		// GProtoDelBlacklistNotify.Flag
-		if err = buffer.ReadUInt8(&elBlacklistNotify.Flag); err != nil {
-			return err
-		}
-
-		// GProtoDelBlacklistNotify.SendTime
-		if err = buffer.ReadUInt64(&elBlacklistNotify.SendTime); err != nil {
-			return err
-		}
-
-		// GProtoDelBlacklistNotify.IsOffline
-		if err = buffer.ReadUInt8(&elBlacklistNotify.IsOffline); err != nil {
-			return err
-		}
-
-		return nil
-	}
-
-	return InvalidVersionError
-}
-
-////////////////////////////////////
-// message GetBlacklistsRequest {
-// }
-
-type GProtoGetBlacklistsRequest struct {
-}
-
-func (getBlacklistsRequest *GProtoGetBlacklistsRequest) Encode(version uint16) ([]byte, error) {
-	if version == 1 {
-
-		/////////////
-		// Encode  //
-		/////////////
-
-		return nil, nil
-	}
-
-	return nil, InvalidVersionError
-}
-
-func (getBlacklistsRequest *GProtoGetBlacklistsRequest) Decode(version uint16, buf []byte) error {
-	if version == 1 {
-
-		/////////////
-		// Decode  //
-		/////////////
-
-		return nil
-	}
-
-	return InvalidVersionError
-}
-
-////////////////////////////////////
-// message GetBlacklistsResponse {
-//     required uint8 code = 1;
-//     repeated Blacklist blacklists = 2;
-// }
-
-type GProtoGetBlacklistsResponse struct {
-	Code       uint8
-	Blacklists []*GProtoBlacklist
-}
-
-func (getBlacklistsResponse *GProtoGetBlacklistsResponse) Encode(version uint16) ([]byte, error) {
-	if version == 1 {
-		// New Buffer
-		buffer := NewEmptyGBuffer()
-
-		/////////////
-		// Encode  //
-		/////////////
-		var err error
-
-		// GProtoGetBlacklistsResponse.Code
-		if err = buffer.WriteUInt8(getBlacklistsResponse.Code); err != nil {
-			return nil, err
-		}
-
-		// GProtoGetBlacklistsResponse.Blacklists [array]
-		if err = buffer.WriteArray(1, getBlacklistsResponse.Blacklists); err != nil {
-			return nil, err
-		}
-
-		return buffer.Bytes(), nil
-	}
-
-	return nil, InvalidVersionError
-}
-
-func (getBlacklistsResponse *GProtoGetBlacklistsResponse) Decode(version uint16, buf []byte) error {
-	// 合法性判断
-	if len(buf) < 1 {
-		return InvalidDecodeBufferError
-	}
-
-	if version == 1 {
-		// New Buffer
-		buffer := NewGBuffer(buf)
-
-		/////////////
-		// Decode  //
-		/////////////
-		var err error
-
-		// GProtoGetBlacklistsResponse.Code
-		if err = buffer.ReadUInt8(&getBlacklistsResponse.Code); err != nil {
-			return err
-		}
-
-		// GProtoGetBlacklistsResponse.Blacklists [array]
-		var blacklistsNum uint16
-		if err = buffer.ReadUInt16(&blacklistsNum); err != nil {
-			return err
-		} else {
-			getBlacklistsResponse.Blacklists = make([]*GProtoBlacklist, blacklistsNum, blacklistsNum)
-			for i := 0; i < int(blacklistsNum); i++ {
-				var lenObj uint16
-				if err = buffer.ReadUInt16(&lenObj); err != nil {
-					return err
-				} else {
-					if bufObj, err := buffer.ReadRawBytes(lenObj); err != nil {
-						return err
-					} else {
-						getBlacklistsResponse.Blacklists[i] = &GProtoBlacklist{}
-						if err = getBlacklistsResponse.Blacklists[i].Decode(1, bufObj); err != nil {
-							return err
-						}
-					}
-				}
-			}
-		}
-
 		return nil
 	}
 
