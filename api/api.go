@@ -4,6 +4,7 @@ import (
 	"github.com/golang/glog"
 	"github.com/lemontree2015/skynet"
 	"github.com/lemontree2015/skynet.common.min/chatroom_client"
+	"github.com/lemontree2015/skynet.common.min/errors"
 	"github.com/lemontree2015/skynet.common.min/gproto"
 	"github.com/lemontree2015/skynet.common.min/server_client"
 	"github.com/lemontree2015/skynet.common.min/session_client"
@@ -44,6 +45,64 @@ func RouteMessageNotify(account string, gProtoMessageNotify *gproto.GProtoMessag
 // Route一条MessageNotify消息到目标GIM Server[N] Service
 func RemoteRouteMessageNotify(serviceKey *skynet.ServiceKey, account string, sessionId uint64, gProtoMessageNotify *gproto.GProtoMessageNotify) error {
 	return server_client.MessageNotify(serviceKey, account, sessionId, gProtoMessageNotify)
+}
+
+// Route一条EnterChatRoomResponse消息到目标GIM Server[N] Service
+func RouteEnterChatRoomResponse(account string, sessionId uint64, gProtoEnterChatRoomResponse *gproto.GProtoEnterChatRoomResponse) error {
+	if serviceKey, _, _ := GetSession(account); serviceKey != nil {
+		// 找到目标account对应的session
+		return RemoteRouteEnterChatRoomResponse(serviceKey, account, sessionId, gProtoEnterChatRoomResponse)
+	} else {
+		return errors.NoSessionError
+	}
+}
+
+// Route一条EnterChatRoomResponse消息到目标GIM Server[N] Service
+func RemoteRouteEnterChatRoomResponse(serviceKey *skynet.ServiceKey, account string, sessionId uint64, gProtoEnterChatRoomResponse *gproto.GProtoEnterChatRoomResponse) error {
+	return server_client.EnterChatRoomResponse(serviceKey, account, sessionId, gProtoEnterChatRoomResponse)
+}
+
+// Route一条EnterChatRoomNotify消息到目标GIM Server[N] Service
+func RemoteRouteEnterChatRoomNotify(serviceKey *skynet.ServiceKey, account string, sessionId uint64, gProtoEnterChatRoomNotify *gproto.GProtoEnterChatRoomNotify) error {
+	return server_client.EnterChatRoomNotify(serviceKey, account, sessionId, gProtoEnterChatRoomNotify)
+}
+
+// Route一条LeaveChatRoomResponse消息到目标GIM Server[N] Service
+func RouteLeaveChatRoomResponse(account string, sessionId uint64, gProtoLeaveChatRoomResponse *gproto.GProtoLeaveChatRoomResponse) error {
+	if serviceKey, _, _ := GetSession(account); serviceKey != nil {
+		// 找到目标account对应的session
+		return RemoteRouteLeaveChatRoomResponse(serviceKey, account, sessionId, gProtoLeaveChatRoomResponse)
+	} else {
+		return errors.NoSessionError
+	}
+}
+
+// Route一条LeaveChatRoomResponse消息到目标GIM Server[N] Service
+func RemoteRouteLeaveChatRoomResponse(serviceKey *skynet.ServiceKey, account string, sessionId uint64, gProtoLeaveChatRoomResponse *gproto.GProtoLeaveChatRoomResponse) error {
+	return server_client.LeaveChatRoomResponse(serviceKey, account, sessionId, gProtoLeaveChatRoomResponse)
+}
+
+// Route一条LeaveChatRoomNotify消息到目标GIM Server[N] Service
+func RemoteRouteLeaveChatRoomNotify(serviceKey *skynet.ServiceKey, account string, sessionId uint64, gProtoLeaveChatRoomNotify *gproto.GProtoLeaveChatRoomNotify) error {
+	return server_client.LeaveChatRoomNotify(serviceKey, account, sessionId, gProtoLeaveChatRoomNotify)
+}
+
+// Route一条MessageResponse消息到目标GIM Server[N] Service
+//
+// 备注:
+// 如果目标Session不存在, 则将消息写入DB
+func RouteMessageResponse(account string, sessionId uint64, gProtoMessageResponse *gproto.GProtoMessageResponse) error {
+	if serviceKey, _, _ := GetSession(account); serviceKey != nil {
+		// 找到目标account对应的session
+		return RemoteRouteMessageResponse(serviceKey, account, sessionId, gProtoMessageResponse)
+	} else {
+		return errors.NoSessionError
+	}
+}
+
+// Route一条MessageResponse消息到目标GIM Server[N] Service
+func RemoteRouteMessageResponse(serviceKey *skynet.ServiceKey, account string, sessionId uint64, gProtoMessageResponse *gproto.GProtoMessageResponse) error {
+	return server_client.MessageResponse(serviceKey, account, sessionId, gProtoMessageResponse)
 }
 
 /////////////////
