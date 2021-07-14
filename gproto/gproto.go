@@ -77,23 +77,6 @@ func init() {
 	messageCreators[MSG_LEAVE_CHATROOM_RESPONSE] = func() IMessage { return new(GProtoLeaveChatRoomResponse) }
 	messageCreators[MSG_LEAVE_CHATROOM_NOTIFY] = func() IMessage { return new(GProtoLeaveChatRoomNotify) }
 	messageCreators[MSG_CHATROOM_KICKOFF_NOTIFY] = func() IMessage { return new(GProtoKickOffNotify) }
-	messageCreators[MSG_CREATE_GROUP_REQUEST] = func() IMessage { return new(GProtoCreateGroupRequest) }
-	messageCreators[MSG_CREATE_GROUP_RESPONSE] = func() IMessage { return new(GProtoCreateGroupResponse) }
-	messageCreators[MSG_GET_GROUP_INFO_REQUEST] = func() IMessage { return new(GProtoGetGroupInfoRequest) }
-	messageCreators[MSG_GET_GROUP_INFO_RESPONSE] = func() IMessage { return new(GProtoGetGroupInfoResponse) }
-	messageCreators[MSG_SET_GROUP_INFO_REQUEST] = func() IMessage { return new(GProtoSetGroupInfoRequest) }
-	messageCreators[MSG_SET_GROUP_INFO_RESPONSE] = func() IMessage { return new(GProtoSetGroupInfoResponse) }
-	messageCreators[MSG_GET_GROUP_LIST_REQUEST] = func() IMessage { return new(GProtoGetGroupListRequest) }
-	messageCreators[MSG_GET_GROUP_LIST_RESPONSE] = func() IMessage { return new(GProtoGetGroupListResponse) }
-	messageCreators[MSG_ENTER_GROUP_REQUEST] = func() IMessage { return new(GProtoEnterGroupRequest) }
-	messageCreators[MSG_ENTER_GROUP_RESPONSE] = func() IMessage { return new(GProtoEnterGroupResponse) }
-	messageCreators[MSG_ENTER_GROUP_NOTIFY] = func() IMessage { return new(GProtoEnterGroupNotify) }
-	messageCreators[MSG_LEAVE_GROUP_REQUEST] = func() IMessage { return new(GProtoLeaveGroupRequest) }
-	messageCreators[MSG_LEAVE_GROUP_RESPONSE] = func() IMessage { return new(GProtoLeaveGroupResponse) }
-	messageCreators[MSG_LEAVE_GROUP_NOTIFY] = func() IMessage { return new(GProtoLeaveGroupNotify) }
-	messageCreators[MSG_GROUP_KICKOFF_NOTIFY] = func() IMessage { return new(GProtoGroupKickoffNotify) }
-	messageCreators[MSG_SET_GROUP_MARKNAME_REQUEST] = func() IMessage { return new(GProtoSetGroupMarknameRequest) }
-	messageCreators[MSG_SET_GROUP_MARKNAME_RESPONSE] = func() IMessage { return new(GProtoSetGroupMarknameResponse) }
 }
 
 // 全局的Message Descriptions

@@ -3,6 +3,7 @@ package api
 import (
 	"github.com/golang/glog"
 	"github.com/lemontree2015/skynet"
+	"github.com/lemontree2015/skynet.common.min/chatroom_client"
 	"github.com/lemontree2015/skynet.common.min/gproto"
 	"github.com/lemontree2015/skynet.common.min/server_client"
 	"github.com/lemontree2015/skynet.common.min/session_client"
@@ -77,4 +78,12 @@ func DelSession(account string) (*skynet.ServiceKey, uint64, error) {
 // 通过判断返回的*skynet.ServiceKey是否为nil来判断是否删除了OldServiceKey
 func DelSessionWithSessionId(account string, sessionId uint64) (*skynet.ServiceKey, uint64, error) {
 	return session_client.DelSessionWithSessionId(account, sessionId)
+}
+
+/////////////////
+// ChatRoom APIs
+/////////////////
+
+func EnterChatRoom(chatRoomId, account string, sessionId uint64, gProtoEnterChatRoomRequest *gproto.GProtoEnterChatRoomRequest) error {
+	return chatroom_client.EnterChatRoom(chatRoomId, account, sessionId, gProtoEnterChatRoomRequest)
 }

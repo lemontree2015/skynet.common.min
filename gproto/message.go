@@ -847,7 +847,6 @@ func (enterChatRoomRequest *GProtoEnterChatRoomRequest) Decode(version uint16, b
 
 type GProtoEnterChatRoomResponse struct {
 	Code  uint8
-	Info  *GProtoChatRoomInfo
 	Users []*GProtoOtherUser
 }
 
@@ -856,9 +855,6 @@ func (enterChatRoomResponse *GProtoEnterChatRoomResponse) Encode(version uint16)
 		buffer := NewEmptyGBuffer()
 		var err error
 		if err = buffer.WriteUInt8(enterChatRoomResponse.Code); err != nil {
-			return nil, err
-		}
-		if err = buffer.WriteStruct(1, enterChatRoomResponse.Info); err != nil {
 			return nil, err
 		}
 		if err = buffer.WriteArray(1, enterChatRoomResponse.Users); err != nil {
@@ -878,9 +874,6 @@ func (enterChatRoomResponse *GProtoEnterChatRoomResponse) Decode(version uint16,
 		buffer := NewGBuffer(buf)
 		var err error
 		if err = buffer.ReadUInt8(&enterChatRoomResponse.Code); err != nil {
-			return err
-		}
-		if err = buffer.ReadStruct(1, enterChatRoomResponse.Info); err != nil {
 			return err
 		}
 		var usersNum uint16
