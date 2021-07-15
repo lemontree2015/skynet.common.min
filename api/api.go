@@ -146,3 +146,11 @@ func DelSessionWithSessionId(account string, sessionId uint64) (*skynet.ServiceK
 func EnterChatRoom(chatRoomId, account string, sessionId uint64, gProtoEnterChatRoomRequest *gproto.GProtoEnterChatRoomRequest) error {
 	return chatroom_client.EnterChatRoom(chatRoomId, account, sessionId, gProtoEnterChatRoomRequest)
 }
+
+func LeaveChatRoom(chatRoomId, account string, sessionId uint64, gProtoLeaveChatRoomRequest *gproto.GProtoLeaveChatRoomRequest) error {
+	return chatroom_client.LeaveChatRoom(chatRoomId, account, sessionId, gProtoLeaveChatRoomRequest)
+}
+
+func ChatRoomMessage(chatRoomId, account string, sessionId uint64, gProtoMessageRequest *gproto.GProtoMessageRequest) error {
+	return chatroom_client.ChatRoomMessage(chatRoomId, account, sessionId, gProtoMessageRequest)
+}

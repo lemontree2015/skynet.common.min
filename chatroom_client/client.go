@@ -88,7 +88,6 @@ func EnterChatRoom(chatRoomId, account string, sessionId uint64, gProtoEnterChat
 //////////////////////
 
 type RPCGIMChatRoomLeaveChatRoomIn struct {
-	AppId                      string
 	ChatRoomId                 string
 	Account                    string
 	SessionId                  uint64
@@ -99,10 +98,9 @@ type RPCGIMChatRoomLeaveChatRoomOut struct {
 	Code string
 }
 
-func LeaveChatRoom(appId, chatRoomId, account string, sessionId uint64, gProtoLeaveChatRoomRequest *gproto.GProtoLeaveChatRoomRequest) error {
+func LeaveChatRoom(chatRoomId, account string, sessionId uint64, gProtoLeaveChatRoomRequest *gproto.GProtoLeaveChatRoomRequest) error {
 	// 构造参数
 	in := &RPCGIMChatRoomLeaveChatRoomIn{
-		AppId:                      appId,
 		ChatRoomId:                 chatRoomId,
 		Account:                    account,
 		SessionId:                  sessionId,
@@ -127,7 +125,6 @@ func LeaveChatRoom(appId, chatRoomId, account string, sessionId uint64, gProtoLe
 //////////////////////
 
 type RPCGIMChatRoomChatRoomMessageIn struct {
-	AppId                string
 	ChatRoomId           string
 	Account              string
 	SessionId            uint64
@@ -138,10 +135,9 @@ type RPCGIMChatRoomChatRoomMessageOut struct {
 	Code string
 }
 
-func ChatRoomMessage(appId, chatRoomId, account string, sessionId uint64, gProtoMessageRequest *gproto.GProtoMessageRequest) error {
+func ChatRoomMessage(chatRoomId, account string, sessionId uint64, gProtoMessageRequest *gproto.GProtoMessageRequest) error {
 	// 构造参数
 	in := &RPCGIMChatRoomChatRoomMessageIn{
-		AppId:                appId,
 		ChatRoomId:           chatRoomId,
 		Account:              account,
 		SessionId:            sessionId,
