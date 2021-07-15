@@ -471,6 +471,7 @@ type GProtoMessageRequest struct {
 	MsgId   string
 	MsgType uint8
 	Content string
+	RoomId  string
 	From    string
 	To      string
 	Extend  string
@@ -487,6 +488,9 @@ func (messageRequest *GProtoMessageRequest) Encode(version uint16) ([]byte, erro
 			return nil, err
 		}
 		if err = buffer.WriteString(messageRequest.Content); err != nil {
+			return nil, err
+		}
+		if err = buffer.WriteString(messageRequest.RoomId); err != nil {
 			return nil, err
 		}
 		if err = buffer.WriteString(messageRequest.From); err != nil {
@@ -519,6 +523,9 @@ func (messageRequest *GProtoMessageRequest) Decode(version uint16, buf []byte) e
 			return err
 		}
 		if messageRequest.Content, err = buffer.ReadString(); err != nil {
+			return err
+		}
+		if messageRequest.RoomId, err = buffer.ReadString(); err != nil {
 			return err
 		}
 		if messageRequest.From, err = buffer.ReadString(); err != nil {
