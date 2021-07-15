@@ -10,6 +10,7 @@ func MessageRequestToMessageNotify(gProtoMessageRequest *GProtoMessageRequest) *
 		MsgId:       gProtoMessageRequest.MsgId,
 		MsgType:     gProtoMessageRequest.MsgType,
 		Content:     gProtoMessageRequest.Content,
+		RoomId:      gProtoMessageRequest.RoomId,
 		From:        gProtoMessageRequest.From,
 		To:          gProtoMessageRequest.To,
 		SendTime:    uint64(timestamp),
