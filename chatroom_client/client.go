@@ -3,7 +3,7 @@ package chatroom_client
 import (
 	"fmt"
 
-	"github.com/lemontree2015/skynet.common/gproto"
+	"github.com/lemontree2015/skynet.common.min/gproto"
 	"github.com/lemontree2015/skynet/client"
 )
 
