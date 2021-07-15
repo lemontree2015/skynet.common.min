@@ -619,6 +619,7 @@ type GProtoMessageNotify struct {
 	MsgId       string
 	MsgType     uint8
 	Content     string
+	RoomId      string
 	From        string
 	To          string
 	SendTime    uint64
@@ -637,6 +638,9 @@ func (messageNotify *GProtoMessageNotify) Encode(version uint16) ([]byte, error)
 			return nil, err
 		}
 		if err = buffer.WriteString(messageNotify.Content); err != nil {
+			return nil, err
+		}
+		if err = buffer.WriteString(messageNotify.RoomId); err != nil {
 			return nil, err
 		}
 		if err = buffer.WriteString(messageNotify.From); err != nil {
@@ -675,6 +679,9 @@ func (messageNotify *GProtoMessageNotify) Decode(version uint16, buf []byte) err
 			return err
 		}
 		if messageNotify.Content, err = buffer.ReadString(); err != nil {
+			return err
+		}
+		if messageNotify.RoomId, err = buffer.ReadString(); err != nil {
 			return err
 		}
 		if messageNotify.From, err = buffer.ReadString(); err != nil {
