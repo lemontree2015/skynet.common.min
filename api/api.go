@@ -162,6 +162,10 @@ func EnterChatRoom(chatRoomId, account string, sessionId uint64, gProtoEnterChat
 	return chatroom_client.EnterChatRoom(chatRoomId, account, sessionId, gProtoEnterChatRoomRequest)
 }
 
+func TouchChatRoom(chatRoomId, account string, sessionId uint64, gProtoTouchChatRoomRequest *gproto.GProtoTouchChatRoomRequest) error {
+	return chatroom_client.TouchChatRoom(chatRoomId, account, sessionId, gProtoTouchChatRoomRequest)
+}
+
 func LeaveChatRoom(chatRoomId, account string, sessionId uint64, gProtoLeaveChatRoomRequest *gproto.GProtoLeaveChatRoomRequest) error {
 	return chatroom_client.LeaveChatRoom(chatRoomId, account, sessionId, gProtoLeaveChatRoomRequest)
 }
