@@ -66,68 +66,28 @@ func CodeToMessage(code int) string {
 }
 
 const (
-	MSG_PING_REQUEST                 = 0x1001 // C -> S
-	MSG_PING_RESPONSE                = 0x1002 // S -> C
-	MSG_ECHO_REQUEST                 = 0x1003 // C -> S
-	MSG_ECHO_RESPONSE                = 0x1004 // S -> C
-	MSG_KICKOFF_NOTIFY               = 0x1005 // S -> C
-	MSG_AUTH_REQUEST                 = 0x1006 // C -> S
-	MSG_AUTH_RESPONSE                = 0x1007 // S -> C
-	MSG_SET_PROFILE_REQUEST          = 0x1008 // C -> S
-	MSG_SET_PROFILE_RESPONSE         = 0x1009 // S -> C
-	MSG_SET_FRIEND_MARKNAME_REQUEST  = 0x100a // C -> S
-	MSG_SET_FRIEND_MARKNAME_RESPONSE = 0x100b // S -> C
-	MSG_GET_PROFILES_REQUEST         = 0x100c // C -> S
-	MSG_GET_PROFILES_RESPONSE        = 0x100d // S -> C
-	MSG_MESSAGE_REQUEST              = 0x100e // C -> S
-	MSG_MESSAGE_RESPONSE             = 0x100f // S -> C
-	MSG_MESSAGE_NOTIFY               = 0x1010 // S -> C
-	MSG_MESSAGE_ACK                  = 0x1011 // C -> S
-	MSG_ADD_FRIEND_REQUEST           = 0x1012 // C -> S
-	MSG_ADD_FRIEND_RESPONSE          = 0x1013 // S -> C
-	MSG_ADD_FRIEND_NOTIFY            = 0x1014 // S -> C
-	MSG_ANSWER_FRIEND_REQUEST        = 0x1015 // C -> S
-	MSG_ANSWER_FRIEND_RESPONSE       = 0x1016 // S -> C
-	MSG_ANSWER_FRIEND_NOTIFY         = 0x1017 // S -> C
-	MSG_DEL_FRIEND_REQUEST           = 0x1018 // C -> S
-	MSG_DEL_FRIEND_RESPONSE          = 0x1019 // S -> C
-	MSG_DEL_FRIEND_NOTIFY            = 0x101a // S -> C
-	MSG_GET_FRIENDS_REQUEST          = 0x101b // C -> S
-	MSG_GET_FRIENDS_RESPONSE         = 0x101c // S -> C
-	MSG_GET_CHATROOM_INFO_REQUEST    = 0x101d // C -> S
-	MSG_GET_CHATROOM_INFO_RESPONSE   = 0x101e // S -> S
-	MSG_ENTER_CHATROOM_REQUEST       = 0x101f // C -> S
-	MSG_ENTER_CHATROOM_RESPONSE      = 0x1020 // S -> C
-	MSG_ENTER_CHATROOM_NOTIFY        = 0x1021 // S -> C
-	MSG_LEAVE_CHATROOM_REQUEST       = 0x1022 // C -> S
-	MSG_LEAVE_CHATROOM_RESPONSE      = 0x1023 // S -> C
-	MSG_LEAVE_CHATROOM_NOTIFY        = 0x1024 // S -> C
-	MSG_CHATROOM_KICKOFF_NOTIFY      = 0x1025 // S -> C
-	MSG_CREATE_GROUP_REQUEST         = 0x1026 // C -> S
-	MSG_CREATE_GROUP_RESPONSE        = 0x1027 // S -> C
-	MSG_GET_GROUP_INFO_REQUEST       = 0x1028 // C -> S
-	MSG_GET_GROUP_INFO_RESPONSE      = 0x1029 // S -> S
-	MSG_SET_GROUP_INFO_REQUEST       = 0x102a // C -> S
-	MSG_SET_GROUP_INFO_RESPONSE      = 0x102b // S -> S
-	MSG_GET_GROUP_LIST_REQUEST       = 0x102c // C -> S
-	MSG_GET_GROUP_LIST_RESPONSE      = 0x102d // S -> S
-	MSG_ENTER_GROUP_REQUEST          = 0x102e // C -> S
-	MSG_ENTER_GROUP_RESPONSE         = 0x1030 // S -> C
-	MSG_ENTER_GROUP_NOTIFY           = 0x1031 // S -> C
-	MSG_LEAVE_GROUP_REQUEST          = 0x1032 // C -> S
-	MSG_LEAVE_GROUP_RESPONSE         = 0x1033 // S -> C
-	MSG_LEAVE_GROUP_NOTIFY           = 0x1034 // S -> C
-	MSG_GROUP_KICKOFF_NOTIFY         = 0x1035 // S -> C
-	MSG_ADD_BLACKLIST_REQUEST        = 0x1035 // C -> S
-	MSG_ADD_BLACKLIST_RESPONSE       = 0x1036 // S -> C
-	MSG_ADD_BLACKLIST_NOTIFY         = 0x1037 // S -> C
-	MSG_DEL_BLACKLIST_REQUEST        = 0x1038 // C -> S
-	MSG_DEL_BLACKLIST_RESPONSE       = 0x1039 // S -> C
-	MSG_DEL_BLACKLIST_NOTIFY         = 0x103a // S -> C
-	MSG_GET_BLACKLISTS_REQUEST       = 0x103b // C -> S
-	MSG_GET_BLACKLISTS_RESPONSE      = 0x103c // S -> C
-	MSG_SET_GROUP_MARKNAME_REQUEST   = 0x103d // C -> S
-	MSG_SET_GROUP_MARKNAME_RESPONSE  = 0x103e // S -> C
+	MSG_PING_REQUEST               = 0x1001 // C -> S
+	MSG_PING_RESPONSE              = 0x1002 // S -> C
+	MSG_ECHO_REQUEST               = 0x1003 // C -> S
+	MSG_ECHO_RESPONSE              = 0x1004 // S -> C
+	MSG_KICKOFF_NOTIFY             = 0x1005 // S -> C
+	MSG_AUTH_REQUEST               = 0x1006 // C -> S
+	MSG_AUTH_RESPONSE              = 0x1007 // S -> C
+	MSG_MESSAGE_REQUEST            = 0x100e // C -> S
+	MSG_MESSAGE_RESPONSE           = 0x100f // S -> C
+	MSG_MESSAGE_NOTIFY             = 0x1010 // S -> C
+	MSG_MESSAGE_ACK                = 0x1011 // C -> S
+	MSG_GET_CHATROOM_INFO_REQUEST  = 0x101d // C -> S
+	MSG_GET_CHATROOM_INFO_RESPONSE = 0x101e // S -> S
+	MSG_ENTER_CHATROOM_REQUEST     = 0x101f // C -> S
+	MSG_ENTER_CHATROOM_RESPONSE    = 0x1020 // S -> C
+	MSG_TOUCH_CHATROOM_REQUEST     = 0x1021 // C -> S
+	MSG_TOUCH_CHATROOM_RESPONSE    = 0x1022 // S -> C
+	MSG_ENTER_CHATROOM_NOTIFY      = 0x1023 // S -> C
+	MSG_LEAVE_CHATROOM_REQUEST     = 0x1024 // C -> S
+	MSG_LEAVE_CHATROOM_RESPONSE    = 0x1025 // S -> C
+	MSG_LEAVE_CHATROOM_NOTIFY      = 0x1026 // S -> C
+	MSG_CHATROOM_KICKOFF_NOTIFY    = 0x1027 // S -> C
 )
 
 // optional字段前缀
@@ -910,6 +870,67 @@ func (enterChatRoomResponse *GProtoEnterChatRoomResponse) Decode(version uint16,
 					}
 				}
 			}
+		}
+		return nil
+	}
+	return InvalidVersionError
+}
+
+// 房间心跳
+type GProtoTouchChatRoomRequest struct {
+	ChatRoomId string
+}
+
+func (touchChatRoomRequest *GProtoTouchChatRoomRequest) Encode(version uint16) ([]byte, error) {
+	if version == 1 {
+		buffer := NewEmptyGBuffer()
+		var err error
+		if err = buffer.WriteString(touchChatRoomRequest.ChatRoomId); err != nil {
+			return nil, err
+		}
+		return buffer.Bytes(), nil
+	}
+	return nil, InvalidVersionError
+}
+
+func (touchChatRoomRequest *GProtoTouchChatRoomRequest) Decode(version uint16, buf []byte) error {
+	if version == 1 {
+		buffer := NewGBuffer(buf)
+		var err error
+		if touchChatRoomRequest.ChatRoomId, err = buffer.ReadString(); err != nil {
+			return err
+		}
+		return nil
+	}
+	return InvalidVersionError
+}
+
+type GProtoTouchChatRoomResponse struct {
+	Code  uint8
+}
+
+func (touchChatRoomResponse *GProtoTouchChatRoomResponse) Encode(version uint16) ([]byte, error) {
+	if version == 1 {
+		buffer := NewEmptyGBuffer()
+		var err error
+		if err = buffer.WriteUInt8(touchChatRoomResponse.Code); err != nil {
+			return nil, err
+		}
+		return buffer.Bytes(), nil
+	}
+	return nil, InvalidVersionError
+}
+
+func (touchChatRoomResponse *GProtoTouchChatRoomResponse) Decode(version uint16, buf []byte) error {
+	// 合法性判断
+	if len(buf) < 1 {
+		return InvalidDecodeBufferError
+	}
+	if version == 1 {
+		buffer := NewGBuffer(buf)
+		var err error
+		if err = buffer.ReadUInt8(&touchChatRoomResponse.Code); err != nil {
+			return err
 		}
 		return nil
 	}

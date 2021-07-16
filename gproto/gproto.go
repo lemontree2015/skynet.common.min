@@ -32,28 +32,13 @@ func init() {
 	messageDescriptions[MSG_GET_CHATROOM_INFO_RESPONSE] = "MSG_GET_CHATROOM_INFO_RESPONSE"
 	messageDescriptions[MSG_ENTER_CHATROOM_REQUEST] = "MSG_ENTER_CHATROOM_REQUEST"
 	messageDescriptions[MSG_ENTER_CHATROOM_RESPONSE] = "MSG_ENTER_CHATROOM_RESPONSE"
+	messageDescriptions[MSG_TOUCH_CHATROOM_REQUEST] = "MSG_TOUCH_CHATROOM_REQUEST"
+	messageDescriptions[MSG_TOUCH_CHATROOM_RESPONSE] = "MSG_TOUCH_CHATROOM_RESPONSE"
 	messageDescriptions[MSG_ENTER_CHATROOM_NOTIFY] = "MSG_ENTER_CHATROOM_NOTIFY"
 	messageDescriptions[MSG_LEAVE_CHATROOM_REQUEST] = "MSG_LEAVE_CHATROOM_REQUEST"
 	messageDescriptions[MSG_LEAVE_CHATROOM_RESPONSE] = "MSG_LEAVE_CHATROOM_RESPONSE"
 	messageDescriptions[MSG_LEAVE_CHATROOM_NOTIFY] = "MSG_LEAVE_CHATROOM_NOTIFY"
 	messageDescriptions[MSG_CHATROOM_KICKOFF_NOTIFY] = "MSG_CHATROOM_KICKOFF_NOTIFY"
-	messageDescriptions[MSG_CREATE_GROUP_REQUEST] = "MSG_CREATE_GROUP_REQUEST"
-	messageDescriptions[MSG_CREATE_GROUP_RESPONSE] = "MSG_CREATE_GROUP_RESPONSE"
-	messageDescriptions[MSG_GET_GROUP_INFO_REQUEST] = "MSG_GET_GROUP_INFO_REQUEST"
-	messageDescriptions[MSG_GET_GROUP_INFO_RESPONSE] = "MSG_GET_GROUP_INFO_RESPONSE"
-	messageDescriptions[MSG_SET_GROUP_INFO_REQUEST] = "MSG_SET_GROUP_INFO_REQUEST"
-	messageDescriptions[MSG_SET_GROUP_INFO_RESPONSE] = "MSG_SET_GROUP_INFO_RESPONSE"
-	messageDescriptions[MSG_GET_GROUP_LIST_REQUEST] = "MSG_GET_GROUP_LIST_REQUEST"
-	messageDescriptions[MSG_GET_GROUP_LIST_RESPONSE] = "MSG_GET_GROUP_LIST_RESPONSE"
-	messageDescriptions[MSG_ENTER_GROUP_REQUEST] = "MSG_ENTER_GROUP_REQUEST"
-	messageDescriptions[MSG_ENTER_GROUP_RESPONSE] = "MSG_ENTER_GROUP_RESPONSE"
-	messageDescriptions[MSG_ENTER_GROUP_NOTIFY] = "MSG_ENTER_GROUP_NOTIFY"
-	messageDescriptions[MSG_LEAVE_GROUP_REQUEST] = "MSG_LEAVE_GROUP_REQUEST"
-	messageDescriptions[MSG_LEAVE_GROUP_RESPONSE] = "MSG_LEAVE_GROUP_RESPONSE"
-	messageDescriptions[MSG_LEAVE_GROUP_NOTIFY] = "MSG_LEAVE_GROUP_NOTIFY"
-	messageDescriptions[MSG_GROUP_KICKOFF_NOTIFY] = "MSG_GROUP_KICKOFF_NOTIFY"
-	messageDescriptions[MSG_SET_GROUP_MARKNAME_REQUEST] = "MSG_SET_GROUP_MARKNAME_REQUEST"
-	messageDescriptions[MSG_SET_GROUP_MARKNAME_RESPONSE] = "MSG_SET_GROUP_MARKNAME_RESPONSE"
 
 	// 初始化Message Creators
 	messageCreators[MSG_PING_REQUEST] = func() IMessage { return new(GProtoPingRequest) }
@@ -72,6 +57,8 @@ func init() {
 	messageCreators[MSG_ENTER_CHATROOM_RESPONSE] = func() IMessage { return new(GProtoGetChatRoomInfoResponse) }
 	messageCreators[MSG_ENTER_CHATROOM_REQUEST] = func() IMessage { return new(GProtoEnterChatRoomRequest) }
 	messageCreators[MSG_ENTER_CHATROOM_RESPONSE] = func() IMessage { return new(GProtoEnterChatRoomResponse) }
+	messageCreators[MSG_TOUCH_CHATROOM_REQUEST] = func() IMessage { return new(GProtoTouchChatRoomRequest) }
+	messageCreators[MSG_TOUCH_CHATROOM_RESPONSE] = func() IMessage { return new(GProtoTouchChatRoomResponse) }
 	messageCreators[MSG_ENTER_CHATROOM_NOTIFY] = func() IMessage { return new(GProtoEnterChatRoomNotify) }
 	messageCreators[MSG_LEAVE_CHATROOM_REQUEST] = func() IMessage { return new(GProtoLeaveChatRoomRequest) }
 	messageCreators[MSG_LEAVE_CHATROOM_RESPONSE] = func() IMessage { return new(GProtoLeaveChatRoomResponse) }

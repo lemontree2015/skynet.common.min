@@ -83,6 +83,39 @@ func EnterChatRoom(chatRoomId, account string, sessionId uint64, gProtoEnterChat
 	}
 }
 
+type RPCGIMChatRoomTouchChatRoomIn struct {
+	ChatRoomId                 string
+	Account                    string
+	SessionId                  uint64
+	GProtoTouchChatRoomRequest *gproto.GProtoTouchChatRoomRequest
+}
+
+type RPCGIMChatRoomTouchChatRoomOut struct {
+	Code string
+}
+
+func TouchChatRoom(chatRoomId, account string, sessionId uint64, gProtoTouchChatRoomRequest *gproto.GProtoTouchChatRoomRequest) error {
+	// 构造参数
+	in := &RPCGIMChatRoomTouchChatRoomIn{
+		ChatRoomId:                 chatRoomId,
+		Account:                    account,
+		SessionId:                  sessionId,
+		GProtoTouchChatRoomRequest: gProtoTouchChatRoomRequest,
+	}
+	out := &RPCGIMChatRoomTouchChatRoomOut{}
+
+	// RPC请求
+	if err := client.GetClient(ChatRoomServiceName(chatRoomId), "1.0.0").Send("TouchChatRoom", in, out); err == nil && out != nil {
+		if out.Code == "success" {
+			return nil
+		} else {
+			return fmt.Errorf(out.Code)
+		}
+	} else {
+		return err
+	}
+}
+
 //////////////////////
 // RPC LeaveChatRoom
 //////////////////////
