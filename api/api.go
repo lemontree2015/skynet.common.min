@@ -62,6 +62,21 @@ func RemoteRouteEnterChatRoomResponse(serviceKey *skynet.ServiceKey, account str
 	return server_client.EnterChatRoomResponse(serviceKey, account, sessionId, gProtoEnterChatRoomResponse)
 }
 
+// Route一条TouchChatRoomResponse消息到目标GIM Server[N] Service
+func RouteTouchChatRoomResponse(account string, sessionId uint64, gProtoTouchChatRoomResponse *gproto.GProtoTouchChatRoomResponse) error {
+	if serviceKey, _, _ := GetSession(account); serviceKey != nil {
+		// 找到目标account对应的session
+		return RemoteRouteTouchChatRoomResponse(serviceKey, account, sessionId, gProtoTouchChatRoomResponse)
+	} else {
+		return errors.NoSessionError
+	}
+}
+
+// Route一条EnterChatRoomResponse消息到目标GIM Server[N] Service
+func RemoteRouteTouchChatRoomResponse(serviceKey *skynet.ServiceKey, account string, sessionId uint64, gProtoTouchChatRoomResponse *gproto.GProtoTouchChatRoomResponse) error {
+	return server_client.TouchChatRoomResponse(serviceKey, account, sessionId, gProtoTouchChatRoomResponse)
+}
+
 // Route一条EnterChatRoomNotify消息到目标GIM Server[N] Service
 func RemoteRouteEnterChatRoomNotify(serviceKey *skynet.ServiceKey, account string, sessionId uint64, gProtoEnterChatRoomNotify *gproto.GProtoEnterChatRoomNotify) error {
 	return server_client.EnterChatRoomNotify(serviceKey, account, sessionId, gProtoEnterChatRoomNotify)

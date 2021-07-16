@@ -289,6 +289,41 @@ func EnterChatRoomResponse(serviceKey *skynet.ServiceKey, account string, sessio
 }
 
 ////////////////////////////
+// RPC EnterChatRoomResponse
+////////////////////////////
+type RPCGIMServerTouchChatRoomResponseIn struct {
+	Account               string
+	SessionId             uint64
+	TouchChatRoomResponse *gproto.GProtoTouchChatRoomResponse
+}
+
+type RPCGIMServerTouchChatRoomResponseOut struct {
+	Code string
+}
+
+// Route一条EnterChatRoomResponse消息到目标GIM Server[N] Service
+func TouchChatRoomResponse(serviceKey *skynet.ServiceKey, account string, sessionId uint64, gProtoTouchChatRoomResponse *gproto.GProtoTouchChatRoomResponse) error {
+	// 构造参数
+	in := &RPCGIMServerTouchChatRoomResponseIn{
+		Account:               account,
+		SessionId:             sessionId,
+		TouchChatRoomResponse: gProtoTouchChatRoomResponse,
+	}
+	out := &RPCGIMServerTouchChatRoomResponseOut{}
+
+	// RPC请求
+	if err := client.GetClient(serviceKey.Name, serviceKey.Version).Send("TouchChatRoomResponse", in, out); err == nil && out != nil {
+		if out.Code == "success" {
+			return nil
+		} else {
+			return fmt.Errorf(out.Code)
+		}
+	} else {
+		return err
+	}
+}
+
+////////////////////////////
 // RPC EnterChatRoomNotify
 ////////////////////////////
 type RPCGIMServerEnterChatRoomNotifyIn struct {
