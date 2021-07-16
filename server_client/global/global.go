@@ -2,9 +2,9 @@ package global
 
 import (
 	"fmt"
-	"github.com/golang/glog"
 	"github.com/lemontree2015/skynet"
 	"github.com/lemontree2015/skynet/config"
+	"github.com/lemontree2015/skynet/logger"
 	"strconv"
 	"strings"
 )
@@ -40,7 +40,6 @@ func init() {
 	} else {
 		panic(fmt.Errorf("Can't Find gim_server.indexs"))
 	}
-
-	glog.Infof("GIMServerServiceKeys=%v", GIMServerServiceKeys)
+	logger.Logger.Infof("GIMServerServiceKeys=%v", GIMServerServiceKeys)
 
 }

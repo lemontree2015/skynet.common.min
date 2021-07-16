@@ -1,13 +1,13 @@
 package api
 
 import (
-	"github.com/golang/glog"
 	"github.com/lemontree2015/skynet"
 	"github.com/lemontree2015/skynet.common.min/chatroom_client"
 	"github.com/lemontree2015/skynet.common.min/errors"
 	"github.com/lemontree2015/skynet.common.min/gproto"
 	"github.com/lemontree2015/skynet.common.min/server_client"
 	"github.com/lemontree2015/skynet.common.min/session_client"
+	"github.com/lemontree2015/skynet/logger"
 )
 
 /////////////////
@@ -35,7 +35,7 @@ func RouteMessageNotify(account string, gProtoMessageNotify *gproto.GProtoMessag
 	} else {
 		if isSave {
 			// 写入DB
-			glog.Infof("APIMessage(OfflineMessage) create offline_error: account=%v, msgId=%v",
+			logger.Logger.Debug("APIMessage(OfflineMessage) create offline_error: account=%v, msgId=%v",
 				account, gProtoMessageNotify.MsgId)
 		}
 		return nil

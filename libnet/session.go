@@ -4,13 +4,12 @@ import (
 	"encoding/binary"
 	"fmt"
 	"github.com/lemontree2015/skynet.common.min/gproto"
+	"github.com/lemontree2015/skynet/logger"
 	"net"
 	"runtime/debug"
 	"sync"
 	"sync/atomic"
 	"time"
-
-	"github.com/golang/glog"
 )
 
 // 用户Session
@@ -110,9 +109,9 @@ func (session *Session) Start() {
 		go session.readLoop()
 
 		if session.server == nil {
-			glog.Infof("session start id=%v", session.id)
+			logger.Logger.Infof("session start id=%v", session.id)
 		} else {
-			glog.Infof("session start server=%v id=%v", session.server.address, session.id)
+			logger.Logger.Infof("session start server=%v id=%v", session.server.address, session.id)
 		}
 	} else {
 		panic(SessionDuplicateStartError)
@@ -132,7 +131,7 @@ func (session *Session) readLoop() {
 	defer func() {
 		// handle panic
 		if r := recover(); r != nil {
-			glog.Infof("session readLoop recover: %v, DEBUG.STACK=%v", r, string(debug.Stack()))
+			logger.Logger.Errorf("session readLoop recover: %v, DEBUG.STACK=%v", r, string(debug.Stack()))
 		}
 
 		session.closeWait.Done()
@@ -329,7 +328,7 @@ func (session *Session) writeLoop() {
 	defer func() {
 		// handle panic
 		if r := recover(); r != nil {
-			glog.Infof("session writeLoop recover: %v, DEBUG.STACK=%v", r, string(debug.Stack()))
+			logger.Logger.Errorf("session writeLoop recover: %v, DEBUG.STACK=%v", r, string(debug.Stack()))
 		}
 
 		session.closeWait.Done()
@@ -413,9 +412,9 @@ func (session *Session) writeLoop() {
 				}
 
 				if session.server == nil {
-					glog.Infof("session close server id=%v", session.id)
+					logger.Logger.Infof("session close server id=%v", session.id)
 				} else {
-					glog.Infof("session close server=%v id=%v", session.server.address, session.id)
+					logger.Logger.Infof("session close server=%v id=%v", session.server.address, session.id)
 				}
 			}()
 			return
