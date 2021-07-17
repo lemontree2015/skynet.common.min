@@ -1,31 +1,13 @@
 package chatroom_client
 
 import (
+	"fmt"
 	"github.com/lemontree2015/skynet/config"
 	"github.com/lemontree2015/skynet/misc"
-	"fmt"
 	"strconv"
 	"strings"
 )
 
-// skynet.conf.default
-//
-// # Shared chatroom service name:
-// # GIM ChatRoom[0] Service
-// # GIM ChatRoom[1] Service
-// # GIM ChatRoom[2] Service
-// # GIM ChatRoom[3] Service
-// # GIM ChatRoom[4] Service
-// # GIM ChatRoom[5] Service
-// # GIM ChatRoom[6] Service
-// # GIM ChatRoom[7] Service
-// #
-// # 0 - 7
-// # e.g.
-// # 0:1:2:3:4:5:6:7:
-// # 0:1:2:
-// # 0:1:
-// # 0:
 func ChatRoomServiceName(account string) string {
 	return ChatRoomServiceNameByShared(ChatRoomShared(account))
 }
@@ -40,35 +22,35 @@ func ChatRoomShared(account string) int {
 	case '0':
 		return 0
 	case '1':
-		return 0
+		return 1
 	case '2':
-		return 1
+		return 2
 	case '3':
-		return 1
+		return 3
 	case '4':
-		return 2
+		return 4
 	case '5':
-		return 2
+		return 5
 	case '6':
-		return 3
+		return 6
 	case '7':
-		return 3
+		return 7
 	case '8':
-		return 4
+		return 8
 	case '9':
-		return 4
+		return 9
 	case 'a':
-		return 5
+		return 10
 	case 'b':
-		return 5
+		return 11
 	case 'c':
-		return 6
+		return 12
 	case 'd':
-		return 6
+		return 13
 	case 'e':
-		return 7
+		return 14
 	case 'f':
-		return 7
+		return 15
 	default:
 		panic(fmt.Errorf("Logic Error"))
 	}
