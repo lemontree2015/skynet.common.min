@@ -66,7 +66,7 @@ func LocalSessionShareds() []int {
 			}
 
 			if v, err := strconv.ParseInt(s, 10, 64); err == nil {
-				if v >= 0 && v <= 7 {
+				if v >= 0 && v <= 15 {
 					rets = append(rets, int(v))
 				} else {
 					panic(fmt.Errorf("gim_session.shards Format Error: %v", str))
