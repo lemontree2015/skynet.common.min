@@ -84,7 +84,7 @@ func RemoteRouteEnterChatRoomNotify(serviceKey *skynet.ServiceKey, account strin
 
 // Route一条LeaveChatRoomResponse消息到目标GIM Server[N] Service
 func RouteLeaveChatRoomResponse(account string, sessionId uint64, gProtoLeaveChatRoomResponse *gproto.GProtoLeaveChatRoomResponse) error {
-	if serviceKey, _, _ := GetSession(account); serviceKey != nil {
+	if serviceKey, sessionId, _ := GetSession(account); serviceKey != nil {
 		// 找到目标account对应的session
 		return RemoteRouteLeaveChatRoomResponse(serviceKey, account, sessionId, gProtoLeaveChatRoomResponse)
 	} else {
