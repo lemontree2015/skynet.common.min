@@ -2,10 +2,36 @@ package chatroom_client
 
 import (
 	"fmt"
-
 	"github.com/lemontree2015/skynet.common.min/gproto"
 	"github.com/lemontree2015/skynet/client"
 )
+
+type RPCGIMChatRoomUserCountIn struct {
+	RoomId string
+}
+
+type RPCGIMChatRoomUserCountOut struct {
+	Code  string
+	Count int
+}
+
+// 查询房间在线人数
+func ChatRoomUserCount(rId string) (error, int) {
+	// 构造参数
+	in := &RPCGIMChatRoomUserCountIn{RoomId: rId}
+	out := &RPCGIMChatRoomUserCountOut{}
+
+	// RPC请求
+	if err := client.GetClient(ChatRoomServiceName(in.RoomId), "1.0.0").Send("ChatRoomUserCount", in, out); err == nil && out != nil {
+		if out.Code == "success" {
+			return nil, out.Count
+		} else {
+			return fmt.Errorf(out.Code), 0
+		}
+	} else {
+		return err, 0
+	}
+}
 
 //////////////////////
 // RPC GetChatRoomInfo
