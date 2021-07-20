@@ -179,6 +179,10 @@ func ChatRoomMessage(chatRoomId, account string, sessionId uint64, gProtoMessage
 	return chatroom_client.ChatRoomMessage(chatRoomId, account, sessionId, gProtoMessageRequest)
 }
 
+func ChatRoomUserCount(roomId string) (error, int) {
+	return chatroom_client.ChatRoomUserCount(roomId)
+}
+
 // 查询用户是否在线
 // 如果发生内部错误, 当做用户离线处理
 func IsOnline(account string) bool {
