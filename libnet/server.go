@@ -6,7 +6,7 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/golang/glog"
+	"github.com/lemontree2015/skynet/logger"
 )
 
 // Server会在当前goroutine中不断的Accept新连接, 每Accept一个连接, 会异步(在一个go goroutine中)
@@ -50,17 +50,16 @@ func NewServer(address string) (*Server, error) {
 
 	listenAddr, err := net.ResolveTCPAddr("tcp", address)
 	if err != nil {
-		glog.Warningf("net.ResolveTCPAddr address=%v, err=%v", address, err)
+		logger.Logger.Warningf("net.ResolveTCPAddr address=%v, err=%v", address, err)
 		return nil, err
 	}
 
 	listener, err := net.ListenTCP("tcp", listenAddr)
 	if err != nil {
-		glog.Warningf("net.ListenTCP address=%v, err=%v", address, err)
+		logger.Logger.Warningf("net.ListenTCP address=%v, err=%v", address, err)
 		return nil, err
 	}
-
-	glog.Infof("new server success address=%v", address)
+	logger.Logger.Infof("new server success address=%v", address)
 
 	return &Server{
 		address:        address,
@@ -118,7 +117,7 @@ func (server *Server) Stop() {
 		// if stop server without this goroutine
 		// deadlock will happen when server closed by session.
 		go func() {
-			glog.Infof("start stop server address=%v", server.address)
+			logger.Logger.Infof("start stop server address=%v", server.address)
 			// stop acceptloop
 			server.listener.Close()
 
@@ -127,7 +126,7 @@ func (server *Server) Stop() {
 
 			// close all sessions
 			server.CloseSessions()
-			glog.Infof("server stopped address=%v", server.address)
+			logger.Logger.Infof("server stopped address=%v", server.address)
 		}()
 	}
 }
@@ -137,7 +136,7 @@ func (server *Server) acceptLoop(callback func(*Session)) {
 	defer func() {
 		close(server.stopChan)
 		server.Stop()
-		glog.Infof("stop server acceptLoop address=%v", server.address)
+		logger.Logger.Infof("stop server acceptLoop address=%v", server.address)
 	}()
 
 	for {
@@ -182,7 +181,7 @@ func (server *Server) SessionCount() int {
 // set a session
 func (server *Server) setSession(session *Session) {
 	if atomic.LoadInt32(&server.stopFlag) == serverFlagOpen {
-		glog.Infof("set session=%v", session)
+		logger.Logger.Debugf("set session=%v", session)
 		server.sessionManager.SetSession(session)
 	}
 }
@@ -190,7 +189,7 @@ func (server *Server) setSession(session *Session) {
 // delete a session
 func (server *Server) delSession(session *Session) {
 	if atomic.LoadInt32(&server.stopFlag) == serverFlagOpen {
-		glog.Infof("del session=%v", session)
+		logger.Logger.Debugf("del session=%v", session)
 		server.sessionManager.DelSession(session)
 	}
 }

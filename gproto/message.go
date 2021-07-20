@@ -290,6 +290,7 @@ func (kickOffNotify *GProtoKickOffNotify) Decode(version uint16, buf []byte) err
 type GProtoAuthRequest struct {
 	Account       string
 	Token         string
+	Timestamp     uint64
 	CustomVersion string
 }
 
@@ -303,6 +304,9 @@ func (authRequest *GProtoAuthRequest) Encode(version uint16) ([]byte, error) {
 			return nil, err
 		}
 		if err = buffer.WriteString(authRequest.Token); err != nil {
+			return nil, err
+		}
+		if err = buffer.WriteUInt64(authRequest.Timestamp); err != nil {
 			return nil, err
 		}
 		if err = buffer.WriteString(authRequest.CustomVersion); err != nil {
@@ -326,6 +330,9 @@ func (authRequest *GProtoAuthRequest) Decode(version uint16, buf []byte) error {
 			return err
 		}
 		if authRequest.Token, err = buffer.ReadString(); err != nil {
+			return err
+		}
+		if err = buffer.ReadUInt64(&authRequest.Timestamp); err != nil {
 			return err
 		}
 		if authRequest.CustomVersion, err = buffer.ReadString(); err != nil {
@@ -906,7 +913,7 @@ func (touchChatRoomRequest *GProtoTouchChatRoomRequest) Decode(version uint16, b
 }
 
 type GProtoTouchChatRoomResponse struct {
-	Code  uint8
+	Code uint8
 }
 
 func (touchChatRoomResponse *GProtoTouchChatRoomResponse) Encode(version uint16) ([]byte, error) {

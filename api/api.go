@@ -1,18 +1,23 @@
 package api
 
 import (
-	"github.com/golang/glog"
 	"github.com/lemontree2015/skynet"
 	"github.com/lemontree2015/skynet.common.min/chatroom_client"
 	"github.com/lemontree2015/skynet.common.min/errors"
 	"github.com/lemontree2015/skynet.common.min/gproto"
 	"github.com/lemontree2015/skynet.common.min/server_client"
 	"github.com/lemontree2015/skynet.common.min/session_client"
+	"github.com/lemontree2015/skynet/logger"
 )
 
 /////////////////
 // Server APIs
 /////////////////
+
+// 查询在线用户到目标GIM Server[N] Service
+func RemoteUserCount(serviceKey *skynet.ServiceKey) (error, int) {
+	return server_client.UserCount(serviceKey)
+}
 
 // Route一条KickoffNotify消息到目标GIM Server[N] Service
 func RemoteRouteKickoffNotify(serviceKey *skynet.ServiceKey, account string, sessionId uint64, gProtoKickOffNotify *gproto.GProtoKickOffNotify) error {
@@ -35,7 +40,7 @@ func RouteMessageNotify(account string, gProtoMessageNotify *gproto.GProtoMessag
 	} else {
 		if isSave {
 			// 写入DB
-			glog.Infof("APIMessage(OfflineMessage) create offline_error: account=%v, msgId=%v",
+			logger.Logger.Debug("APIMessage(OfflineMessage) create offline_error: account=%v, msgId=%v",
 				account, gProtoMessageNotify.MsgId)
 		}
 		return nil
@@ -172,4 +177,15 @@ func LeaveChatRoom(chatRoomId, account string, sessionId uint64, gProtoLeaveChat
 
 func ChatRoomMessage(chatRoomId, account string, sessionId uint64, gProtoMessageRequest *gproto.GProtoMessageRequest) error {
 	return chatroom_client.ChatRoomMessage(chatRoomId, account, sessionId, gProtoMessageRequest)
+}
+
+// 查询用户是否在线
+// 如果发生内部错误, 当做用户离线处理
+func IsOnline(account string) bool {
+	if serviceKey, _, _ := GetSession(account); serviceKey != nil {
+		// 找到目标account对应的session
+		return true
+	} else {
+		return false
+	}
 }

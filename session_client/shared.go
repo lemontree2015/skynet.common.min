@@ -8,24 +8,6 @@ import (
 	"strings"
 )
 
-// skynet.conf.default
-//
-// # Shared session service name:
-// # GIM Session[0] Service
-// # GIM Session[1] Service
-// # GIM Session[2] Service
-// # GIM Session[3] Service
-// # GIM Session[4] Service
-// # GIM Session[5] Service
-// # GIM Session[6] Service
-// # GIM Session[7] Service
-// #
-// # 0 - 7
-// # e.g.
-// # 0:1:2:3:4:5:6:7:
-// # 0:1:2:
-// # 0:1:
-// # 0:
 func SessionServiceName(account string) string {
 	return SessionServiceNameByShared(SessionShared(account))
 }
@@ -40,35 +22,35 @@ func SessionShared(account string) int {
 	case '0':
 		return 0
 	case '1':
-		return 0
+		return 1
 	case '2':
-		return 1
+		return 2
 	case '3':
-		return 1
+		return 3
 	case '4':
-		return 2
+		return 4
 	case '5':
-		return 2
+		return 5
 	case '6':
-		return 3
+		return 6
 	case '7':
-		return 3
+		return 7
 	case '8':
-		return 4
+		return 8
 	case '9':
-		return 4
+		return 9
 	case 'a':
-		return 5
+		return 10
 	case 'b':
-		return 5
+		return 11
 	case 'c':
-		return 6
+		return 12
 	case 'd':
-		return 6
+		return 13
 	case 'e':
-		return 7
+		return 14
 	case 'f':
-		return 7
+		return 15
 	default:
 		panic(fmt.Errorf("Logic Error"))
 	}
@@ -84,7 +66,7 @@ func LocalSessionShareds() []int {
 			}
 
 			if v, err := strconv.ParseInt(s, 10, 64); err == nil {
-				if v >= 0 && v <= 7 {
+				if v >= 0 && v <= 15 {
 					rets = append(rets, int(v))
 				} else {
 					panic(fmt.Errorf("gim_session.shards Format Error: %v", str))
