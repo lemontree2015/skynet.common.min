@@ -141,9 +141,13 @@ func (server *Server) acceptLoop(callback func(*Session)) {
 
 	for {
 		conn, err := server.listener.Accept()
-		if err != nil && err == io.EOF {
+		//if err != nil && err == io.EOF {
+		//	// stop the server
+		//	break
+		//}
+		if conn == nil || err != nil || err == io.EOF {
 			// stop the server
-			break
+			continue
 		}
 
 		// 接收到新的connection, 异步执行callback
